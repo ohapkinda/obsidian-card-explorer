@@ -138,6 +138,7 @@ export default class CardExplorerPlugin extends Plugin {
 class CardExplorerView extends ItemView {
   private fileSystemData: FileSystemItem[] = [];
   private expandedFolders: Set<string> = new Set();
+  private folderColors: Map<string, string> = new Map();
 
   /**
    * Конструктор представления Card Explorer
@@ -319,16 +320,30 @@ class CardExplorerView extends ItemView {
       const files = folder.children.filter(child => child.type === 'file');
       if (files.length > 0) {
         const filesContainer = contentContainer.createDiv("files-container");
-        const cardsGrid = filesContainer.createDiv("card-grid");
         
-    for (const file of files) {
+        // Заголовок папки над карточками
+        const folderHeader = filesContainer.createDiv("folder-files-header");
+        folderHeader.style.borderLeftColor = this.getFolderColor(folder.path);
+        folderHeader.createEl("h4", { text: `📁 ${folder.name}` });
+        
+        // Карточки на всю ширину
+        const cardsGrid = filesContainer.createDiv("card-grid-full-width");
+        
+        for (const file of files) {
           if (file.file) {
             const content = await this.app.vault.cachedRead(file.file);
-      const preview = content.split("\n").slice(0, 3).join(" ");
+            const preview = content.split("\n").slice(0, 3).join(" ");
 
             const card = cardsGrid.createDiv("card");
-            card.createEl("h3", { text: file.name });
-      card.createEl("p", { text: preview });
+            
+            // Цветная полоска слева
+            const colorBar = card.createDiv("card-color-bar");
+            colorBar.style.backgroundColor = this.getFolderColor(folder.path);
+            
+            // Содержимое карточки
+            const cardContent = card.createDiv("card-content");
+            cardContent.createEl("h3", { text: file.name });
+            cardContent.createEl("p", { text: preview });
 
             // Обработчик клика для открытия файла
             card.onclick = () => {
@@ -672,6 +687,29 @@ class CardExplorerView extends ItemView {
         alert("Не удалось удалить файл");
       }
     }
+  }
+
+  /**
+   * Получает цвет для папки (генерирует или возвращает существующий)
+   * @param folderPath - путь к папке
+   * @returns цвет в формате CSS
+   */
+  private getFolderColor(folderPath: string): string {
+    if (!this.folderColors.has(folderPath)) {
+      // Генерируем цвет на основе хеша пути
+      const colors = [
+        '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7',
+        '#DDA0DD', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E9',
+        '#F8C471', '#82E0AA', '#F1948A', '#85C1E9', '#D7BDE2'
+      ];
+      const hash = folderPath.split('').reduce((a, b) => {
+        a = ((a << 5) - a) + b.charCodeAt(0);
+        return a & a;
+      }, 0);
+      const colorIndex = Math.abs(hash) % colors.length;
+      this.folderColors.set(folderPath, colors[colorIndex]);
+    }
+    return this.folderColors.get(folderPath)!;
   }
 
   /**
