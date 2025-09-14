@@ -669,6 +669,9 @@ class CardExplorerView extends ItemView {
    * Обновляет представление (перерисовывает всю структуру)
    */
   private async refreshView() {
+    // Перезагружаем данные из файловой системы
+    await this.loadFileSystem();
+    
     const container = this.containerEl.children[1];
     container.empty();
     
