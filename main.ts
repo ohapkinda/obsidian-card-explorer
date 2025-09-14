@@ -808,40 +808,20 @@ class CardExplorerView extends ItemView {
       const fullPath = this.app.vault.adapter.getResourcePath(file.path);
       console.log("Resource path:", fullPath);
       
-      // Если это app:// URL, пытаемся получить реальный путь
-      if (fullPath.startsWith('app://')) {
-        // Извлекаем путь из app:// URL
-        const url = new URL(fullPath);
-        const realPath = decodeURIComponent(url.pathname);
-        console.log("Real path:", realPath);
-        
-        // Создаем file:// URL
-        const fileUrl = `file://${realPath}`;
-        console.log("File URL:", fileUrl);
-        
-        // Создаем временную ссылку для открытия
-        const link = document.createElement('a');
-        link.href = fileUrl;
-        link.target = '_blank';
-        
-        console.log("Created link with href:", link.href);
-        
-        // Добавляем ссылку в DOM, кликаем и удаляем
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log("Link clicked and removed");
-      } else {
-        // Если это не app:// URL, используем как есть
-        const link = document.createElement('a');
-        link.href = fullPath;
-        link.target = '_blank';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
+      // Создаем временную ссылку для скачивания файла
+      const link = document.createElement('a');
+      link.href = fullPath;
+      link.download = file.name; // Это заставит браузер скачать файл
+      link.target = '_blank';
+      
+      console.log("Created download link with href:", link.href);
+      
+      // Добавляем ссылку в DOM, кликаем и удаляем
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      console.log("Download link clicked and removed");
       
     } catch (error) {
       console.error("Ошибка открытия файла:", error);
