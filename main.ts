@@ -137,6 +137,7 @@ export default class CardExplorerPlugin extends Plugin {
 
 class CardExplorerView extends ItemView {
   private fileSystemData: FileSystemItem[] = [];
+  private expandedFolders: Set<string> = new Set();
 
   /**
    * Конструктор представления Card Explorer
@@ -224,7 +225,7 @@ class CardExplorerView extends ItemView {
           path: child.path,
           type: 'folder',
           children: [],
-          isExpanded: false,
+          isExpanded: this.expandedFolders.has(child.path),
           folder: child
         };
         
@@ -281,6 +282,14 @@ class CardExplorerView extends ItemView {
     // Обработчик клика для раскрытия/сворачивания
     folderHeader.onclick = () => {
       folder.isExpanded = !folder.isExpanded;
+      
+      // Сохраняем состояние в Set
+      if (folder.isExpanded) {
+        this.expandedFolders.add(folder.path);
+      } else {
+        this.expandedFolders.delete(folder.path);
+      }
+      
       this.refreshView();
     };
 
