@@ -804,24 +804,10 @@ class CardExplorerView extends ItemView {
     try {
       console.log("openFileDirectly called for:", file.name);
       
-      // Получаем полный путь к файлу через vault
-      const fullPath = this.app.vault.adapter.getResourcePath(file.path);
-      console.log("Resource path:", fullPath);
-      
-      // Создаем временную ссылку для скачивания файла
-      const link = document.createElement('a');
-      link.href = fullPath;
-      link.download = file.name; // Это заставит браузер скачать файл
-      link.target = '_blank';
-      
-      console.log("Created download link with href:", link.href);
-      
-      // Добавляем ссылку в DOM, кликаем и удаляем
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      console.log("Download link clicked and removed");
+      // Используем встроенный API Obsidian для открытия файла
+      // Это тот же механизм, что использует обычный файловый менеджер
+      this.app.workspace.openLinkText(file.path, "", true);
+      console.log("File opened using Obsidian API");
       
     } catch (error) {
       console.error("Ошибка открытия файла:", error);
