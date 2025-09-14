@@ -311,7 +311,7 @@ class CardExplorerView extends ItemView {
         const subfoldersContainer = contentContainer.createDiv("subfolders-container");
         for (const subfolder of subfolders) {
           const subfolderElement = subfoldersContainer.createDiv("folder-container");
-          subfolderElement.style.paddingLeft = `${(level + 1) * 20}px`;
+          subfolderElement.style.paddingLeft = `${(level + 1) * 12}px`;
           await this.renderFolderWithContent(subfolderElement, subfolder, level + 1);
         }
       }
@@ -321,13 +321,21 @@ class CardExplorerView extends ItemView {
       if (files.length > 0) {
         const filesContainer = contentContainer.createDiv("files-container");
         
-        // Заголовок папки над карточками
-        const folderHeader = filesContainer.createDiv("folder-files-header");
-        folderHeader.style.borderLeftColor = this.getFolderColor(folder.path);
-        folderHeader.createEl("h4", { text: `📁 ${folder.name}` });
+        // Заголовок папки над карточками (только для корневых папок)
+        if (level === 0) {
+          const folderHeader = filesContainer.createDiv("folder-files-header");
+          folderHeader.style.borderLeftColor = this.getFolderColor(folder.path);
+          folderHeader.createEl("h4", { text: `📁 ${folder.name}` });
+        }
         
         // Карточки на всю ширину
         const cardsGrid = filesContainer.createDiv("card-grid-full-width");
+        
+        // Добавляем вертикальную полосу для подпапок
+        if (level > 0) {
+          cardsGrid.style.borderLeft = `3px solid ${this.getFolderColor(folder.path)}`;
+          cardsGrid.style.paddingLeft = "8px";
+        }
         
         for (const file of files) {
           if (file.file) {
