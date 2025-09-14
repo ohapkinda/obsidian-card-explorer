@@ -69,6 +69,55 @@
   cursor: pointer; /* Курсор-указатель при наведении */
 }
 
+/* Контекстное меню */
+.context-menu {
+  background: var(--background-primary); /* Фон меню */
+  border: 1px solid var(--background-modifier-border); /* Граница меню */
+  border-radius: 8px; /* Закругленные углы */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Тень для глубины */
+  padding: 4px 0; /* Внутренние отступы */
+  min-width: 180px; /* Минимальная ширина */
+  z-index: 1000; /* Высокий z-index для отображения поверх других элементов */
+  font-size: 14px; /* Размер шрифта */
+}
+
+/* Элемент контекстного меню */
+.context-menu-item {
+  display: flex; /* Горизонтальное расположение иконки и текста */
+  align-items: center; /* Выравнивание по центру */
+  padding: 8px 12px; /* Внутренние отступы */
+  cursor: pointer; /* Курсор-указатель */
+  transition: background-color 0.2s; /* Плавное изменение фона */
+  user-select: none; /* Запрет выделения текста */
+}
+
+.context-menu-item:hover {
+  background: var(--background-modifier-hover); /* Фон при наведении */
+}
+
+/* Опасные действия (удаление) */
+.context-menu-item.dangerous {
+  color: var(--text-error); /* Красный цвет для опасных действий */
+}
+
+.context-menu-item.dangerous:hover {
+  background: var(--background-modifier-error); /* Красный фон при наведении */
+}
+
+/* Иконка в контекстном меню */
+.context-menu-icon {
+  margin-right: 8px; /* Отступ справа от иконки */
+  font-size: 16px; /* Размер иконки */
+  width: 20px; /* Фиксированная ширина для выравнивания */
+  text-align: center; /* Выравнивание по центру */
+}
+
+/* Текст в контекстном меню */
+.context-menu-label {
+  flex: 1; /* Занимает оставшееся пространство */
+  font-weight: 400; /* Обычный шрифт */
+}
+
 /* Заголовок папки */
 .folder-header {
   display: flex; /* Горизонтальное расположение иконки и названия */

@@ -13,6 +13,14 @@ interface FileSystemItem {
   folder?: TFolder;
 }
 
+// Интерфейс для действий контекстного меню
+interface ContextMenuAction {
+  label: string;
+  icon: string;
+  action: () => void;
+  dangerous?: boolean;
+}
+
 export default class CardExplorerPlugin extends Plugin {
   /**
    * Инициализация плагина при загрузке
@@ -42,6 +50,7 @@ export default class CardExplorerPlugin extends Plugin {
 
 class CardExplorerView extends ItemView {
   private fileSystemData: FileSystemItem[] = [];
+  private contextMenu: HTMLElement | null = null;
 
   /**
    * Конструктор представления Card Explorer
@@ -189,6 +198,12 @@ class CardExplorerView extends ItemView {
       this.refreshView();
     };
 
+    // Обработчик правого клика для контекстного меню
+    folderHeader.oncontextmenu = (e) => {
+      e.preventDefault();
+      this.showContextMenu(e, folder);
+    };
+
     // Контейнер для содержимого папки
     if (folder.isExpanded && folder.children) {
       const contentContainer = container.createDiv("folder-content");
@@ -263,6 +278,186 @@ class CardExplorerView extends ItemView {
         this.app.workspace.openLinkText(file.file.path, "", true);
       }
     };
+  }
+
+  /**
+   * Показывает контекстное меню для папки
+   * @param event - событие мыши
+   * @param folder - папка для которой показывается меню
+   */
+  private showContextMenu(event: MouseEvent, folder: FileSystemItem) {
+    // Скрываем предыдущее меню если есть
+    this.hideContextMenu();
+
+    // Создаем контекстное меню
+    this.contextMenu = this.containerEl.createDiv("context-menu");
+    this.contextMenu.style.position = "absolute";
+    this.contextMenu.style.left = `${event.clientX}px`;
+    this.contextMenu.style.top = `${event.clientY}px`;
+
+    // Получаем действия для папки
+    const actions = this.getFolderActions(folder);
+
+    // Создаем элементы меню
+    actions.forEach(action => {
+      const menuItem = this.contextMenu!.createDiv("context-menu-item");
+      if (action.dangerous) {
+        menuItem.addClass("dangerous");
+      }
+
+      const icon = menuItem.createSpan("context-menu-icon");
+      icon.textContent = action.icon;
+
+      const label = menuItem.createSpan("context-menu-label");
+      label.textContent = action.label;
+
+      menuItem.onclick = () => {
+        action.action();
+        this.hideContextMenu();
+      };
+    });
+
+    // Обработчик клика вне меню для его скрытия
+    setTimeout(() => {
+      document.addEventListener('click', this.hideContextMenu.bind(this), { once: true });
+    }, 0);
+  }
+
+  /**
+   * Скрывает контекстное меню
+   */
+  private hideContextMenu() {
+    if (this.contextMenu) {
+      this.contextMenu.remove();
+      this.contextMenu = null;
+    }
+  }
+
+  /**
+   * Получает действия для папки
+   * @param folder - папка для которой получаем действия
+   * @returns массив действий
+   */
+  private getFolderActions(folder: FileSystemItem): ContextMenuAction[] {
+    return [
+      {
+        label: "Переименовать",
+        icon: "✏️",
+        action: () => this.renameFolder(folder)
+      },
+      {
+        label: "Открыть в Finder",
+        icon: "📁",
+        action: () => this.openInFinder(folder)
+      },
+      {
+        label: "Создать папку",
+        icon: "📂",
+        action: () => this.createNewFolder(folder)
+      },
+      {
+        label: "Создать файл",
+        icon: "📄",
+        action: () => this.createNewFile(folder)
+      },
+      {
+        label: "Удалить папку",
+        icon: "🗑️",
+        action: () => this.deleteFolder(folder),
+        dangerous: true
+      }
+    ];
+  }
+
+  /**
+   * Переименовывает папку
+   * @param folder - папка для переименования
+   */
+  private async renameFolder(folder: FileSystemItem) {
+    const newName = prompt("Введите новое название папки:", folder.name);
+    if (newName && newName !== folder.name && newName.trim()) {
+      try {
+        const newPath = folder.path.replace(folder.name, newName.trim());
+        await this.app.vault.rename(folder.folder!, newPath);
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка переименования папки:", error);
+        alert("Не удалось переименовать папку");
+      }
+    }
+  }
+
+  /**
+   * Открывает папку в Finder/Explorer
+   * @param folder - папка для открытия
+   */
+  private openInFinder(folder: FileSystemItem) {
+    // Показываем путь к папке пользователю
+    if (folder.folder) {
+      const message = `Путь к папке: ${folder.folder.path}\n\nСкопируйте этот путь и откройте в файловом менеджере.`;
+      alert(message);
+      
+      // Пытаемся скопировать путь в буфер обмена
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(folder.folder.path).catch(() => {
+          console.log("Не удалось скопировать путь в буфер обмена");
+        });
+      }
+    }
+  }
+
+  /**
+   * Создает новую папку
+   * @param parentFolder - родительская папка
+   */
+  private async createNewFolder(parentFolder: FileSystemItem) {
+    const folderName = prompt("Введите название новой папки:");
+    if (folderName && folderName.trim()) {
+      try {
+        const newPath = `${parentFolder.path}/${folderName.trim()}`;
+        await this.app.vault.createFolder(newPath);
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка создания папки:", error);
+        alert("Не удалось создать папку");
+      }
+    }
+  }
+
+  /**
+   * Создает новый файл
+   * @param parentFolder - родительская папка
+   */
+  private async createNewFile(parentFolder: FileSystemItem) {
+    const fileName = prompt("Введите название нового файла (с расширением .md):");
+    if (fileName && fileName.trim()) {
+      try {
+        const fileNameWithExt = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
+        const newPath = `${parentFolder.path}/${fileNameWithExt}`;
+        await this.app.vault.create(newPath, "");
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка создания файла:", error);
+        alert("Не удалось создать файл");
+      }
+    }
+  }
+
+  /**
+   * Удаляет папку
+   * @param folder - папка для удаления
+   */
+  private async deleteFolder(folder: FileSystemItem) {
+    const confirmed = confirm(`Вы уверены, что хотите удалить папку "${folder.name}" и все её содержимое?`);
+    if (confirmed) {
+      try {
+        await this.app.vault.delete(folder.folder!);
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка удаления папки:", error);
+        alert("Не удалось удалить папку");
+      }
+    }
   }
 
   /**
