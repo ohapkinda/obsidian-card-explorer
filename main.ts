@@ -803,24 +803,45 @@ class CardExplorerView extends ItemView {
   private openFileDirectly(file: TFile) {
     try {
       console.log("openFileDirectly called for:", file.name);
+      
       // Получаем полный путь к файлу через vault
       const fullPath = this.app.vault.adapter.getResourcePath(file.path);
-      console.log("Full path:", fullPath);
+      console.log("Resource path:", fullPath);
       
-      // Создаем временную ссылку для скачивания/открытия
-      const link = document.createElement('a');
-      link.href = fullPath;
-      link.download = file.name;
-      link.target = '_blank';
-      
-      console.log("Created link with href:", link.href);
-      
-      // Добавляем ссылку в DOM, кликаем и удаляем
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      
-      console.log("Link clicked and removed");
+      // Если это app:// URL, пытаемся получить реальный путь
+      if (fullPath.startsWith('app://')) {
+        // Извлекаем путь из app:// URL
+        const url = new URL(fullPath);
+        const realPath = decodeURIComponent(url.pathname);
+        console.log("Real path:", realPath);
+        
+        // Создаем file:// URL
+        const fileUrl = `file://${realPath}`;
+        console.log("File URL:", fileUrl);
+        
+        // Создаем временную ссылку для открытия
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.target = '_blank';
+        
+        console.log("Created link with href:", link.href);
+        
+        // Добавляем ссылку в DOM, кликаем и удаляем
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log("Link clicked and removed");
+      } else {
+        // Если это не app:// URL, используем как есть
+        const link = document.createElement('a');
+        link.href = fullPath;
+        link.target = '_blank';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
       
     } catch (error) {
       console.error("Ошибка открытия файла:", error);
