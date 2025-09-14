@@ -1,4 +1,4 @@
-import { App, Plugin, WorkspaceLeaf, ItemView, TFile, TFolder } from "obsidian";
+import { App, Plugin, WorkspaceLeaf, ItemView, TFile, TFolder, Modal, Setting } from "obsidian";
 
 const VIEW_TYPE_CARDS = "card-explorer";
 
@@ -19,6 +19,100 @@ interface ContextMenuAction {
   icon: string;
   action: () => void;
   dangerous?: boolean;
+}
+
+// Модальное окно для переименования
+class RenameModal extends Modal {
+  private newName: string;
+  private onSubmit: (newName: string) => void;
+
+  constructor(app: App, currentName: string, onSubmit: (newName: string) => void) {
+    super(app);
+    this.newName = currentName;
+    this.onSubmit = onSubmit;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.createEl("h2", { text: "Переименовать" });
+
+    new Setting(contentEl)
+      .setName("Новое название")
+      .addText(text => {
+        text
+          .setValue(this.newName)
+          .onChange(value => this.newName = value);
+        text.inputEl.focus();
+        text.inputEl.select();
+      });
+
+    new Setting(contentEl)
+      .addButton(btn => btn
+        .setButtonText("Отмена")
+        .onClick(() => this.close())
+      )
+      .addButton(btn => btn
+        .setButtonText("Переименовать")
+        .setCta()
+        .onClick(() => {
+          this.onSubmit(this.newName);
+          this.close();
+        })
+      );
+  }
+
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
+}
+
+// Модальное окно для создания нового элемента
+class CreateModal extends Modal {
+  private name: string;
+  private onSubmit: (name: string) => void;
+  private title: string;
+  private placeholder: string;
+
+  constructor(app: App, title: string, placeholder: string, onSubmit: (name: string) => void) {
+    super(app);
+    this.name = "";
+    this.onSubmit = onSubmit;
+    this.title = title;
+    this.placeholder = placeholder;
+  }
+
+  onOpen() {
+    const { contentEl } = this;
+    contentEl.createEl("h2", { text: this.title });
+
+    new Setting(contentEl)
+      .setName("Название")
+      .addText(text => text
+        .setPlaceholder(this.placeholder)
+        .onChange(value => this.name = value)
+        .inputEl.focus()
+      );
+
+    new Setting(contentEl)
+      .addButton(btn => btn
+        .setButtonText("Отмена")
+        .onClick(() => this.close())
+      )
+      .addButton(btn => btn
+        .setButtonText("Создать")
+        .setCta()
+        .onClick(() => {
+          this.onSubmit(this.name);
+          this.close();
+        })
+      );
+  }
+
+  onClose() {
+    const { contentEl } = this;
+    contentEl.empty();
+  }
 }
 
 export default class CardExplorerPlugin extends Plugin {
@@ -226,14 +320,14 @@ class CardExplorerView extends ItemView {
         const filesContainer = contentContainer.createDiv("files-container");
         const cardsGrid = filesContainer.createDiv("card-grid");
         
-        for (const file of files) {
+    for (const file of files) {
           if (file.file) {
             const content = await this.app.vault.cachedRead(file.file);
-            const preview = content.split("\n").slice(0, 3).join(" ");
+      const preview = content.split("\n").slice(0, 3).join(" ");
 
             const card = cardsGrid.createDiv("card");
             card.createEl("h3", { text: file.name });
-            card.createEl("p", { text: preview });
+      card.createEl("p", { text: preview });
 
             card.onclick = () => this.app.workspace.openLinkText(file.file!.path, "", true);
           }
@@ -473,17 +567,18 @@ class CardExplorerView extends ItemView {
    * @param folder - папка для переименования
    */
   private async renameFolder(folder: FileSystemItem) {
-    const newName = prompt("Введите новое название папки:", folder.name);
-    if (newName && newName !== folder.name && newName.trim()) {
-      try {
-        const newPath = folder.path.replace(folder.name, newName.trim());
-        await this.app.vault.rename(folder.folder!, newPath);
-        this.refreshView();
-      } catch (error) {
-        console.error("Ошибка переименования папки:", error);
-        alert("Не удалось переименовать папку");
+    new RenameModal(this.app, folder.name, async (newName) => {
+      if (newName && newName !== folder.name && newName.trim()) {
+        try {
+          const newPath = folder.path.replace(folder.name, newName.trim());
+          await this.app.vault.rename(folder.folder!, newPath);
+          this.refreshView();
+        } catch (error) {
+          console.error("Ошибка переименования папки:", error);
+          alert("Не удалось переименовать папку");
+        }
       }
-    }
+    }).open();
   }
 
   /**
@@ -510,17 +605,18 @@ class CardExplorerView extends ItemView {
    * @param parentFolder - родительская папка
    */
   private async createNewFolder(parentFolder: FileSystemItem) {
-    const folderName = prompt("Введите название новой папки:");
-    if (folderName && folderName.trim()) {
-      try {
-        const newPath = `${parentFolder.path}/${folderName.trim()}`;
-        await this.app.vault.createFolder(newPath);
-        this.refreshView();
-      } catch (error) {
-        console.error("Ошибка создания папки:", error);
-        alert("Не удалось создать папку");
+    new CreateModal(this.app, "Создать папку", "Название папки", async (folderName) => {
+      if (folderName && folderName.trim()) {
+        try {
+          const newPath = `${parentFolder.path}/${folderName.trim()}`;
+          await this.app.vault.createFolder(newPath);
+          this.refreshView();
+        } catch (error) {
+          console.error("Ошибка создания папки:", error);
+          alert("Не удалось создать папку");
+        }
       }
-    }
+    }).open();
   }
 
   /**
@@ -528,18 +624,19 @@ class CardExplorerView extends ItemView {
    * @param parentFolder - родительская папка
    */
   private async createNewFile(parentFolder: FileSystemItem) {
-    const fileName = prompt("Введите название нового файла (с расширением .md):");
-    if (fileName && fileName.trim()) {
-      try {
-        const fileNameWithExt = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
-        const newPath = `${parentFolder.path}/${fileNameWithExt}`;
-        await this.app.vault.create(newPath, "");
-        this.refreshView();
-      } catch (error) {
-        console.error("Ошибка создания файла:", error);
-        alert("Не удалось создать файл");
+    new CreateModal(this.app, "Создать файл", "Название файла (с .md)", async (fileName) => {
+      if (fileName && fileName.trim()) {
+        try {
+          const fileNameWithExt = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
+          const newPath = `${parentFolder.path}/${fileNameWithExt}`;
+          await this.app.vault.create(newPath, "");
+          this.refreshView();
+        } catch (error) {
+          console.error("Ошибка создания файла:", error);
+          alert("Не удалось создать файл");
+        }
       }
-    }
+    }).open();
   }
 
   /**
@@ -574,17 +671,18 @@ class CardExplorerView extends ItemView {
    * @param file - файл для переименования
    */
   private async renameFile(file: FileSystemItem) {
-    const newName = prompt("Введите новое название файла:", file.name);
-    if (newName && newName !== file.name && newName.trim()) {
-      try {
-        const newPath = file.path.replace(file.name, newName.trim());
-        await this.app.vault.rename(file.file!, newPath);
-        this.refreshView();
-      } catch (error) {
-        console.error("Ошибка переименования файла:", error);
-        alert("Не удалось переименовать файл");
+    new RenameModal(this.app, file.name, async (newName) => {
+      if (newName && newName !== file.name && newName.trim()) {
+        try {
+          const newPath = file.path.replace(file.name, newName.trim());
+          await this.app.vault.rename(file.file!, newPath);
+          this.refreshView();
+        } catch (error) {
+          console.error("Ошибка переименования файла:", error);
+          alert("Не удалось переименовать файл");
+        }
       }
-    }
+    }).open();
   }
 
   /**
@@ -611,16 +709,17 @@ class CardExplorerView extends ItemView {
    * @param file - файл для перемещения
    */
   private async moveFile(file: FileSystemItem) {
-    const newPath = prompt("Введите новый путь для файла:", file.path);
-    if (newPath && newPath !== file.path && newPath.trim()) {
-      try {
-        await this.app.vault.rename(file.file!, newPath.trim());
-        this.refreshView();
-      } catch (error) {
-        console.error("Ошибка перемещения файла:", error);
-        alert("Не удалось переместить файл");
+    new CreateModal(this.app, "Переместить файл", "Новый путь", async (newPath) => {
+      if (newPath && newPath !== file.path && newPath.trim()) {
+        try {
+          await this.app.vault.rename(file.file!, newPath.trim());
+          this.refreshView();
+        } catch (error) {
+          console.error("Ошибка перемещения файла:", error);
+          alert("Не удалось переместить файл");
+        }
       }
-    }
+    }).open();
   }
 
   /**
