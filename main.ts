@@ -320,16 +320,28 @@ class CardExplorerView extends ItemView {
         const filesContainer = contentContainer.createDiv("files-container");
         const cardsGrid = filesContainer.createDiv("card-grid");
         
-    for (const file of files) {
+        for (const file of files) {
           if (file.file) {
             const content = await this.app.vault.cachedRead(file.file);
-      const preview = content.split("\n").slice(0, 3).join(" ");
+            const preview = content.split("\n").slice(0, 3).join(" ");
 
             const card = cardsGrid.createDiv("card");
             card.createEl("h3", { text: file.name });
-      card.createEl("p", { text: preview });
+            card.createEl("p", { text: preview });
 
-            card.onclick = () => this.app.workspace.openLinkText(file.file!.path, "", true);
+            // Обработчик клика для открытия файла
+            card.onclick = () => {
+              if (file.file) {
+                this.app.workspace.openLinkText(file.file.path, "", true);
+              }
+            };
+
+            // Обработчик правого клика для контекстного меню
+            card.oncontextmenu = (e) => {
+              e.preventDefault();
+              console.log("Right click on file card:", file.name);
+              this.showFileContextMenu(e, file);
+            };
           }
         }
       }
