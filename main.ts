@@ -356,6 +356,7 @@ class CardExplorerView extends ItemView {
 
             // Обработчик клика для открытия файла
             card.onclick = (e) => {
+              console.log("File card clicked:", file.name, file.file);
               if (file.file) {
                 this.openFileInSystem(file.file, e);
               }
@@ -781,13 +782,16 @@ class CardExplorerView extends ItemView {
    * @param event - событие клика для определения модификаторов
    */
   private openFileInSystem(file: TFile, event?: MouseEvent) {
+    console.log("openFileInSystem called:", file.name, file.extension);
     // Для Obsidian файлов (.md) открываем в Obsidian
     if (file.extension === 'md') {
       // Проверяем, нажат ли Cmd (Mac) или Ctrl (Windows/Linux)
       const openInNewTab = event && (event.metaKey || event.ctrlKey);
+      console.log("Opening MD file:", file.path, "in new tab:", openInNewTab);
       this.app.workspace.openLinkText(file.path, "", openInNewTab);
     } else {
       // Для остальных файлов пытаемся открыть напрямую
+      console.log("Opening non-MD file:", file.name);
       this.openFileDirectly(file);
     }
   }
@@ -798,8 +802,10 @@ class CardExplorerView extends ItemView {
    */
   private openFileDirectly(file: TFile) {
     try {
+      console.log("openFileDirectly called for:", file.name);
       // Получаем полный путь к файлу через vault
       const fullPath = this.app.vault.adapter.getResourcePath(file.path);
+      console.log("Full path:", fullPath);
       
       // Создаем временную ссылку для скачивания/открытия
       const link = document.createElement('a');
@@ -807,10 +813,14 @@ class CardExplorerView extends ItemView {
       link.download = file.name;
       link.target = '_blank';
       
+      console.log("Created link with href:", link.href);
+      
       // Добавляем ссылку в DOM, кликаем и удаляем
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      
+      console.log("Link clicked and removed");
       
     } catch (error) {
       console.error("Ошибка открытия файла:", error);
