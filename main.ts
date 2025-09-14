@@ -232,7 +232,7 @@ class CardExplorerView extends ItemView {
         
         parentArray.push(folderItem);
         await this.buildFileSystemTree(child, folderItem.children!);
-      } else if (child instanceof TFile && child.extension === 'md') {
+      } else if (child instanceof TFile) {
         const fileItem: FileSystemItem = {
           name: child.basename,
           path: child.path,
@@ -335,17 +335,29 @@ class CardExplorerView extends ItemView {
         
         for (const file of files) {
           if (file.file) {
-            const content = await this.app.vault.cachedRead(file.file);
-            const preview = content.split("\n").slice(0, 3).join(" ");
-
             const card = cardsGrid.createDiv("card");
-            card.createEl("h3", { text: file.name });
-            card.createEl("p", { text: preview });
+            
+            // Показываем иконку файла в зависимости от типа
+            const fileIcon = this.getFileIcon(file.file.extension);
+            card.createEl("h3", { text: `${fileIcon} ${file.name}` });
+            
+            // Показываем превью только для текстовых файлов
+            if (this.isTextFile(file.file.extension)) {
+              try {
+                const content = await this.app.vault.cachedRead(file.file);
+                const preview = content.split("\n").slice(0, 3).join(" ");
+                card.createEl("p", { text: preview });
+              } catch (error) {
+                card.createEl("p", { text: "Не удалось прочитать файл" });
+              }
+            } else {
+              card.createEl("p", { text: `${file.file.extension.toUpperCase()} файл` });
+            }
 
             // Обработчик клика для открытия файла
             card.onclick = () => {
               if (file.file) {
-                this.app.workspace.openLinkText(file.file.path, "", true);
+                this.openFileInSystem(file.file);
               }
             };
 
@@ -707,6 +719,82 @@ class CardExplorerView extends ItemView {
       this.folderColors.set(folderPath, colors[colorIndex]);
     }
     return this.folderColors.get(folderPath)!;
+  }
+
+  /**
+   * Определяет, является ли файл текстовым
+   * @param extension - расширение файла
+   * @returns true если файл текстовый
+   */
+  private isTextFile(extension: string): boolean {
+    const textExtensions = ['md', 'txt', 'json', 'js', 'ts', 'css', 'html', 'xml', 'yaml', 'yml', 'csv', 'log'];
+    return textExtensions.indexOf(extension.toLowerCase()) !== -1;
+  }
+
+  /**
+   * Получает иконку для файла в зависимости от его типа
+   * @param extension - расширение файла
+   * @returns иконка в виде эмодзи
+   */
+  private getFileIcon(extension: string): string {
+    const ext = extension.toLowerCase();
+    const iconMap: { [key: string]: string } = {
+      'md': '📝',
+      'txt': '📄',
+      'pdf': '📕',
+      'doc': '📘',
+      'docx': '📘',
+      'xls': '📊',
+      'xlsx': '📊',
+      'ppt': '📋',
+      'pptx': '📋',
+      'jpg': '🖼️',
+      'jpeg': '🖼️',
+      'png': '🖼️',
+      'gif': '🖼️',
+      'svg': '🖼️',
+      'mp4': '🎬',
+      'avi': '🎬',
+      'mov': '🎬',
+      'mp3': '🎵',
+      'wav': '🎵',
+      'zip': '📦',
+      'rar': '📦',
+      '7z': '📦',
+      'js': '📜',
+      'ts': '📜',
+      'css': '🎨',
+      'html': '🌐',
+      'json': '📋',
+      'xml': '📋',
+      'yaml': '📋',
+      'yml': '📋',
+      'csv': '📊',
+      'log': '📋'
+    };
+    return iconMap[ext] || '📄';
+  }
+
+  /**
+   * Открывает файл в системном приложении по умолчанию
+   * @param file - файл для открытия
+   */
+  private openFileInSystem(file: TFile) {
+    // Для Obsidian файлов (.md) открываем в Obsidian
+    if (file.extension === 'md') {
+      this.app.workspace.openLinkText(file.path, "", true);
+    } else {
+      // Для остальных файлов показываем путь и копируем в буфер обмена
+      const message = `Файл: ${file.path}\n\nСкопируйте этот путь и откройте в системном приложении.`;
+      alert(message);
+      
+      // Пытаемся скопировать путь в буфер обмена
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(file.path).catch(() => {
+          console.log("Не удалось скопировать путь в буфер обмена");
+        });
+      }
+    }
   }
 
   /**
