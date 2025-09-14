@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "module": "ESNext",
+    "target": "ES6",
+    "allowJs": true,
+    "noImplicitAny": true,
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "dist",
+    "sourceMap": true,
+    "inlineSources": true
+  },
+  "include": ["main.ts"]
+}

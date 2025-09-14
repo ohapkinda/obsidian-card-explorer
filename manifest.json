@@ -1,0 +1,9 @@
+{
+  "id": "card-explorer",
+  "name": "Card Explorer",
+  "version": "0.0.1",
+  "minAppVersion": "1.4.0",
+  "description": "File explorer with card previews",
+  "author": "You",
+  "isDesktopOnly": false
+}
