@@ -1,6 +1,90 @@
-/* Контейнер для древовидной структуры файлов */
-.file-tree-container {
+/* Основной контейнер с двумя панелями */
+.main-container {
+  display: flex; /* Горизонтальное расположение панелей */
+  height: 100%; /* Полная высота */
+  gap: 10px; /* Отступ между панелями */
+}
+
+/* Левая панель - дерево папок */
+.left-panel {
+  width: 300px; /* Фиксированная ширина */
+  min-width: 250px; /* Минимальная ширина */
+  max-width: 400px; /* Максимальная ширина */
+  border-right: 1px solid var(--background-modifier-border); /* Разделительная линия */
+  padding: 10px; /* Внутренние отступы */
+  overflow-y: auto; /* Вертикальная прокрутка при необходимости */
+  font-family: var(--font-family); /* Используем шрифт темы Obsidian */
+}
+
+/* Правая панель - карточки файлов */
+.right-panel {
+  flex: 1; /* Занимает оставшееся пространство */
+  padding: 10px; /* Внутренние отступы */
+  overflow-y: auto; /* Вертикальная прокрутка при необходимости */
+}
+
+/* Контейнер для карточек файлов */
+.cards-container {
+  height: 100%; /* Полная высота панели */
+}
+
+/* Сетка карточек (возвращаем оригинальный стиль) */
+.card-grid {
+  display: grid; /* Используем CSS Grid для создания сетки */
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* Автоматическое заполнение колонок с минимальной шириной 180px */
+  gap: 12px; /* Отступ между карточками */
   padding: 10px; /* Внутренние отступы контейнера */
+}
+
+/* Стили для отдельных карточек (возвращаем оригинальный стиль) */
+.card {
+  background: var(--background-primary); /* Фон карточки использует основную тему Obsidian */
+  border: 1px solid var(--background-modifier-border); /* Граница карточки в стиле темы */
+  border-radius: 10px; /* Закругленные углы для современного вида */
+  padding: 10px; /* Внутренние отступы карточки */
+  cursor: pointer; /* Курсор-указатель при наведении */
+  transition: all 0.2s; /* Плавная анимация всех изменений */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Тень для создания эффекта глубины */
+}
+
+.card:hover {
+  transform: scale(1.02); /* Легкое увеличение карточки на 2% */
+  background: var(--background-secondary); /* Изменение фона на вторичный цвет темы */
+}
+
+.card h3 {
+  font-size: 1.1em; /* Размер шрифта немного больше обычного */
+  margin-bottom: 6px; /* Отступ снизу от заголовка */
+  word-wrap: break-word; /* Перенос длинных слов */
+  overflow-wrap: break-word; /* Современная альтернатива для переноса слов */
+}
+
+.card p {
+  word-wrap: break-word; /* Перенос длинных слов */
+  overflow-wrap: break-word; /* Современная альтернатива для переноса слов */
+  line-height: 1.4; /* Межстрочный интервал для лучшей читаемости */
+  hyphens: auto; /* Автоматическая расстановка переносов */
+}
+
+/* Кнопка "Показать все файлы" */
+.show-all-button {
+  background: var(--background-primary); /* Фон кнопки */
+  border: 1px solid var(--background-modifier-border); /* Граница кнопки */
+  border-radius: 6px; /* Закругленные углы */
+  padding: 8px 12px; /* Внутренние отступы */
+  margin-bottom: 10px; /* Отступ снизу */
+  cursor: pointer; /* Курсор-указатель */
+  transition: background-color 0.2s; /* Плавное изменение фона */
+  font-weight: 500; /* Полужирный шрифт */
+  text-align: center; /* Выравнивание по центру */
+}
+
+.show-all-button:hover {
+  background: var(--background-modifier-hover); /* Фон при наведении */
+}
+
+/* Контейнер для древовидной структуры папок */
+.file-tree-container {
   font-family: var(--font-family); /* Используем шрифт темы Obsidian */
 }
 
