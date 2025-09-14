@@ -377,7 +377,14 @@ class CardExplorerView extends ItemView {
     // Обработчик правого клика для контекстного меню
     fileHeader.oncontextmenu = (e) => {
       e.preventDefault();
-      console.log("Right click on file:", file.name);
+      console.log("Right click on file header:", file.name);
+      this.showFileContextMenu(e, file);
+    };
+
+    // Также добавляем обработчик к самой карточке файла
+    element.oncontextmenu = (e) => {
+      e.preventDefault();
+      console.log("Right click on file card:", file.name);
       this.showFileContextMenu(e, file);
     };
   }
@@ -388,6 +395,7 @@ class CardExplorerView extends ItemView {
    * @param file - файл для которого показывается меню
    */
   private showFileContextMenu(event: MouseEvent, file: FileSystemItem) {
+    console.log("showFileContextMenu called for file:", file.name);
     // Скрываем предыдущее меню если есть
     this.hideContextMenu();
 
