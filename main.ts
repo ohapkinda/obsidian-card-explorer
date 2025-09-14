@@ -201,6 +201,7 @@ class CardExplorerView extends ItemView {
     // Обработчик правого клика для контекстного меню
     folderHeader.oncontextmenu = (e) => {
       e.preventDefault();
+      console.log("Right click on folder:", folder.name);
       this.showContextMenu(e, folder);
     };
 
@@ -282,6 +283,7 @@ class CardExplorerView extends ItemView {
     // Обработчик правого клика для контекстного меню
     fileHeader.oncontextmenu = (e) => {
       e.preventDefault();
+      console.log("Right click on file:", file.name);
       this.showFileContextMenu(e, file);
     };
   }
