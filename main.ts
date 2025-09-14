@@ -798,16 +798,20 @@ class CardExplorerView extends ItemView {
    */
   private openFileDirectly(file: TFile) {
     try {
-      // Создаем ссылку на файл
-      const fileUrl = `file://${file.path}`;
+      // Получаем полный путь к файлу через vault
+      const fullPath = this.app.vault.adapter.getResourcePath(file.path);
       
-      // Пытаемся открыть файл в новом окне/вкладке
-      const newWindow = window.open(fileUrl, '_blank');
+      // Создаем временную ссылку для скачивания/открытия
+      const link = document.createElement('a');
+      link.href = fullPath;
+      link.download = file.name;
+      link.target = '_blank';
       
-      if (!newWindow) {
-        // Если не удалось открыть, показываем путь
-        this.showFilePath(file);
-      }
+      // Добавляем ссылку в DOM, кликаем и удаляем
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
     } catch (error) {
       console.error("Ошибка открытия файла:", error);
       // В случае ошибки показываем путь
