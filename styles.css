@@ -1,31 +1,28 @@
-/* Основной контейнер с двумя панелями */
-.main-container {
-  display: flex; /* Горизонтальное расположение панелей */
-  height: 100%; /* Полная высота */
-  gap: 10px; /* Отступ между панелями */
-}
-
-/* Левая панель - дерево папок */
-.left-panel {
-  width: 300px; /* Фиксированная ширина */
-  min-width: 250px; /* Минимальная ширина */
-  max-width: 400px; /* Максимальная ширина */
-  border-right: 1px solid var(--background-modifier-border); /* Разделительная линия */
-  padding: 10px; /* Внутренние отступы */
-  overflow-y: auto; /* Вертикальная прокрутка при необходимости */
+/* Контейнер для единой структуры */
+.unified-tree-container {
+  padding: 10px; /* Внутренние отступы контейнера */
   font-family: var(--font-family); /* Используем шрифт темы Obsidian */
+  overflow-y: auto; /* Вертикальная прокрутка при необходимости */
 }
 
-/* Правая панель - карточки файлов */
-.right-panel {
-  flex: 1; /* Занимает оставшееся пространство */
-  padding: 10px; /* Внутренние отступы */
-  overflow-y: auto; /* Вертикальная прокрутка при необходимости */
+/* Контейнер для папки */
+.folder-container {
+  margin-bottom: 8px; /* Отступ между папками */
+}
+
+/* Содержимое папки */
+.folder-content {
+  margin-top: 8px; /* Отступ от заголовка папки */
+}
+
+/* Контейнер для подпапок */
+.subfolders-container {
+  margin-bottom: 12px; /* Отступ перед карточками файлов */
 }
 
 /* Контейнер для карточек файлов */
-.cards-container {
-  height: 100%; /* Полная высота панели */
+.files-container {
+  margin-top: 8px; /* Отступ от подпапок */
 }
 
 /* Сетка карточек (возвращаем оригинальный стиль) */
@@ -64,28 +61,6 @@
   overflow-wrap: break-word; /* Современная альтернатива для переноса слов */
   line-height: 1.4; /* Межстрочный интервал для лучшей читаемости */
   hyphens: auto; /* Автоматическая расстановка переносов */
-}
-
-/* Кнопка "Показать все файлы" */
-.show-all-button {
-  background: var(--background-primary); /* Фон кнопки */
-  border: 1px solid var(--background-modifier-border); /* Граница кнопки */
-  border-radius: 6px; /* Закругленные углы */
-  padding: 8px 12px; /* Внутренние отступы */
-  margin-bottom: 10px; /* Отступ снизу */
-  cursor: pointer; /* Курсор-указатель */
-  transition: background-color 0.2s; /* Плавное изменение фона */
-  font-weight: 500; /* Полужирный шрифт */
-  text-align: center; /* Выравнивание по центру */
-}
-
-.show-all-button:hover {
-  background: var(--background-modifier-hover); /* Фон при наведении */
-}
-
-/* Контейнер для древовидной структуры папок */
-.file-tree-container {
-  font-family: var(--font-family); /* Используем шрифт темы Obsidian */
 }
 
 /* Элемент дерева (папка или файл) */

@@ -42,9 +42,6 @@ export default class CardExplorerPlugin extends Plugin {
 
 class CardExplorerView extends ItemView {
   private fileSystemData: FileSystemItem[] = [];
-  private currentFolder: FileSystemItem | null = null;
-  private allFiles: FileSystemItem[] = [];
-  private cardsContainer: HTMLElement | null = null;
 
   /**
    * Конструктор представления Card Explorer
@@ -80,7 +77,7 @@ class CardExplorerView extends ItemView {
 
   /**
    * Вызывается при открытии представления
-   * Создает гибридный интерфейс: дерево папок + карточки файлов
+   * Создает единую структуру: папки + карточки файлов в одном дереве
    */
   async onOpen() {
     const container = this.containerEl.children[1];
@@ -89,30 +86,11 @@ class CardExplorerView extends ItemView {
     // Загружаем структуру файловой системы
     await this.loadFileSystem();
     
-    // Создаем основной контейнер с двумя панелями
-    const mainContainer = container.createDiv("main-container");
+    // Создаем контейнер для единой структуры
+    const treeContainer = container.createDiv("unified-tree-container");
     
-    // Левая панель - дерево папок
-    const leftPanel = mainContainer.createDiv("left-panel");
-    const treeContainer = leftPanel.createDiv("file-tree-container");
-    
-    // Кнопка "Показать все файлы"
-    const showAllButton = leftPanel.createDiv("show-all-button");
-    showAllButton.textContent = "📁 Показать все файлы";
-    showAllButton.onclick = () => {
-      this.currentFolder = null;
-      this.renderFileCards();
-    };
-    
-    // Рендерим древовидную структуру папок
-    this.renderFolderTree(treeContainer, this.fileSystemData, 0);
-    
-    // Правая панель - карточки файлов
-    const rightPanel = mainContainer.createDiv("right-panel");
-    this.cardsContainer = rightPanel.createDiv("cards-container");
-    
-    // Показываем все файлы по умолчанию
-    this.renderFileCards();
+    // Рендерим единую структуру: папки + карточки файлов
+    this.renderUnifiedTree(treeContainer, this.fileSystemData, 0);
   }
 
   /**
@@ -120,7 +98,6 @@ class CardExplorerView extends ItemView {
    */
   private async loadFileSystem() {
     this.fileSystemData = [];
-    this.allFiles = [];
     const rootFolder = this.app.vault.getRoot();
     
     if (rootFolder) {
@@ -167,85 +144,36 @@ class CardExplorerView extends ItemView {
         };
         
         parentArray.push(fileItem);
-        this.allFiles.push(fileItem); // Добавляем в общий список файлов
       }
     }
   }
 
   /**
-   * Рендерит древовидную структуру только папок
+   * Рендерит единую структуру: папки + карточки файлов
    * @param container - контейнер для рендеринга
    * @param items - массив элементов для рендеринга
    * @param level - уровень вложенности
    */
-  private renderFolderTree(container: HTMLElement, items: FileSystemItem[], level: number) {
+  private async renderUnifiedTree(container: HTMLElement, items: FileSystemItem[], level: number) {
     for (const item of items) {
       if (item.type === 'folder') {
-        const itemElement = container.createDiv("tree-item");
-        itemElement.style.paddingLeft = `${level * 20}px`;
-        this.renderFolder(itemElement, item, level);
+        // Рендерим папку
+        const folderElement = container.createDiv("folder-container");
+        folderElement.style.paddingLeft = `${level * 20}px`;
+        await this.renderFolderWithContent(folderElement, item, level);
       }
     }
   }
 
   /**
-   * Рендерит карточки файлов в сетке
-   */
-  private async renderFileCards() {
-    if (!this.cardsContainer) return;
-    
-    this.cardsContainer.empty();
-    const grid = this.cardsContainer.createDiv("card-grid");
-
-    // Определяем какие файлы показывать
-    const filesToShow = this.currentFolder 
-      ? this.getFilesFromFolder(this.currentFolder)
-      : this.allFiles;
-
-    // Рендерим карточки файлов
-    for (const file of filesToShow) {
-      if (file.file) {
-        const content = await this.app.vault.cachedRead(file.file);
-        const preview = content.split("\n").slice(0, 3).join(" ");
-
-        const card = grid.createDiv("card");
-        card.createEl("h3", { text: file.name });
-        card.createEl("p", { text: preview });
-
-        card.onclick = () => this.app.workspace.openLinkText(file.file!.path, "", true);
-      }
-    }
-  }
-
-  /**
-   * Получает все файлы из папки рекурсивно
-   * @param folder - папка для поиска файлов
-   * @returns массив файлов
-   */
-  private getFilesFromFolder(folder: FileSystemItem): FileSystemItem[] {
-    const files: FileSystemItem[] = [];
-    
-    if (folder.children) {
-      for (const child of folder.children) {
-        if (child.type === 'file') {
-          files.push(child);
-        } else if (child.type === 'folder') {
-          files.push(...this.getFilesFromFolder(child));
-        }
-      }
-    }
-    
-    return files;
-  }
-
-  /**
-   * Рендерит папку с возможностью раскрытия/сворачивания
-   * @param element - HTML элемент для рендеринга
+   * Рендерит папку с её содержимым: подпапки + карточки файлов
+   * @param container - контейнер для папки
    * @param folder - данные папки
    * @param level - уровень вложенности
    */
-  private renderFolder(element: HTMLElement, folder: FileSystemItem, level: number) {
-    const folderHeader = element.createDiv("folder-header");
+  private async renderFolderWithContent(container: HTMLElement, folder: FileSystemItem, level: number) {
+    // Заголовок папки
+    const folderHeader = container.createDiv("folder-header");
     
     // Иконка папки
     const icon = folderHeader.createSpan("folder-icon");
@@ -258,22 +186,47 @@ class CardExplorerView extends ItemView {
     // Обработчик клика для раскрытия/сворачивания
     folderHeader.onclick = () => {
       folder.isExpanded = !folder.isExpanded;
-      this.refreshFolderTree();
-    };
-
-    // Обработчик клика для выбора папки (показать файлы)
-    folderHeader.oncontextmenu = (e) => {
-      e.preventDefault();
-      this.currentFolder = folder;
-      this.renderFileCards();
+      this.refreshView();
     };
 
     // Контейнер для содержимого папки
     if (folder.isExpanded && folder.children) {
-      const childrenContainer = element.createDiv("folder-children");
-      this.renderFolderTree(childrenContainer, folder.children, level + 1);
+      const contentContainer = container.createDiv("folder-content");
+      
+      // Сначала рендерим подпапки
+      const subfolders = folder.children.filter(child => child.type === 'folder');
+      if (subfolders.length > 0) {
+        const subfoldersContainer = contentContainer.createDiv("subfolders-container");
+        for (const subfolder of subfolders) {
+          const subfolderElement = subfoldersContainer.createDiv("folder-container");
+          subfolderElement.style.paddingLeft = `${(level + 1) * 20}px`;
+          await this.renderFolderWithContent(subfolderElement, subfolder, level + 1);
+        }
+      }
+      
+      // Затем рендерим карточки файлов
+      const files = folder.children.filter(child => child.type === 'file');
+      if (files.length > 0) {
+        const filesContainer = contentContainer.createDiv("files-container");
+        const cardsGrid = filesContainer.createDiv("card-grid");
+        
+        for (const file of files) {
+          if (file.file) {
+            const content = await this.app.vault.cachedRead(file.file);
+            const preview = content.split("\n").slice(0, 3).join(" ");
+
+            const card = cardsGrid.createDiv("card");
+            card.createEl("h3", { text: file.name });
+            card.createEl("p", { text: preview });
+
+            card.onclick = () => this.app.workspace.openLinkText(file.file!.path, "", true);
+          }
+        }
+      }
     }
   }
+
+
 
   /**
    * Рендерит файл с превью содержимого
@@ -313,49 +266,17 @@ class CardExplorerView extends ItemView {
   }
 
   /**
-   * Обновляет только дерево папок
-   */
-  private refreshFolderTree() {
-    const leftPanel = this.containerEl.querySelector(".left-panel");
-    if (leftPanel) {
-      const treeContainer = leftPanel.querySelector(".file-tree-container");
-      if (treeContainer) {
-        treeContainer.empty();
-        this.renderFolderTree(treeContainer as HTMLElement, this.fileSystemData, 0);
-      }
-    }
-  }
-
-  /**
    * Обновляет представление (перерисовывает всю структуру)
    */
   private async refreshView() {
     const container = this.containerEl.children[1];
     container.empty();
     
-    const mainContainer = container.createDiv("main-container");
+    // Создаем контейнер для единой структуры
+    const treeContainer = container.createDiv("unified-tree-container");
     
-    // Левая панель - дерево папок
-    const leftPanel = mainContainer.createDiv("left-panel");
-    const treeContainer = leftPanel.createDiv("file-tree-container");
-    
-    // Кнопка "Показать все файлы"
-    const showAllButton = leftPanel.createDiv("show-all-button");
-    showAllButton.textContent = "📁 Показать все файлы";
-    showAllButton.onclick = () => {
-      this.currentFolder = null;
-      this.renderFileCards();
-    };
-    
-    // Рендерим древовидную структуру папок
-    this.renderFolderTree(treeContainer, this.fileSystemData, 0);
-    
-    // Правая панель - карточки файлов
-    const rightPanel = mainContainer.createDiv("right-panel");
-    this.cardsContainer = rightPanel.createDiv("cards-container");
-    
-    // Показываем файлы
-    this.renderFileCards();
+    // Рендерим единую структуру: папки + карточки файлов
+    this.renderUnifiedTree(treeContainer, this.fileSystemData, 0);
   }
 
   /**
