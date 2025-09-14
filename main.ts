@@ -320,14 +320,14 @@ class CardExplorerView extends ItemView {
         const filesContainer = contentContainer.createDiv("files-container");
         const cardsGrid = filesContainer.createDiv("card-grid");
         
-        for (const file of files) {
+    for (const file of files) {
           if (file.file) {
             const content = await this.app.vault.cachedRead(file.file);
-            const preview = content.split("\n").slice(0, 3).join(" ");
+      const preview = content.split("\n").slice(0, 3).join(" ");
 
             const card = cardsGrid.createDiv("card");
             card.createEl("h3", { text: file.name });
-            card.createEl("p", { text: preview });
+      card.createEl("p", { text: preview });
 
             // Обработчик клика для открытия файла
             card.onclick = () => {
@@ -418,10 +418,6 @@ class CardExplorerView extends ItemView {
     // Получаем координаты относительно viewport
     const x = event.clientX;
     const y = event.clientY;
-    
-    // Устанавливаем позицию
-    this.contextMenu.style.left = `${x}px`;
-    this.contextMenu.style.top = `${y}px`;
 
     // Получаем действия для файла
     const actions = this.getFileActions(file);
@@ -445,6 +441,9 @@ class CardExplorerView extends ItemView {
       };
     });
 
+    // Позиционируем меню с учетом границ экрана
+    this.positionContextMenu(this.contextMenu, x, y);
+
     // Обработчик клика вне меню для его скрытия
     setTimeout(() => {
       document.addEventListener('click', this.hideContextMenu.bind(this), { once: true });
@@ -467,10 +466,6 @@ class CardExplorerView extends ItemView {
     // Получаем координаты относительно viewport
     const x = event.clientX;
     const y = event.clientY;
-    
-    // Устанавливаем позицию
-    this.contextMenu.style.left = `${x}px`;
-    this.contextMenu.style.top = `${y}px`;
 
     // Получаем действия для папки
     const actions = this.getFolderActions(folder);
@@ -494,6 +489,9 @@ class CardExplorerView extends ItemView {
       };
     });
 
+    // Позиционируем меню с учетом границ экрана
+    this.positionContextMenu(this.contextMenu, x, y);
+
     // Обработчик клика вне меню для его скрытия
     setTimeout(() => {
       document.addEventListener('click', this.hideContextMenu.bind(this), { once: true });
@@ -508,6 +506,41 @@ class CardExplorerView extends ItemView {
       this.contextMenu.remove();
       this.contextMenu = null;
     }
+  }
+
+  /**
+   * Позиционирует контекстное меню с учетом границ экрана
+   * @param menu - элемент контекстного меню
+   * @param x - координата X клика
+   * @param y - координата Y клика
+   */
+  private positionContextMenu(menu: HTMLElement, x: number, y: number) {
+    // Получаем размеры экрана
+    const screenWidth = window.innerWidth;
+    const screenHeight = window.innerHeight;
+    
+    // Получаем размеры меню (после его создания)
+    const menuRect = menu.getBoundingClientRect();
+    const menuWidth = menuRect.width || 180; // fallback к минимальной ширине
+    const menuHeight = menuRect.height || 200; // fallback к примерной высоте
+    
+    // Вычисляем финальные координаты
+    let finalX = x;
+    let finalY = y;
+    
+    // Проверяем, не выходит ли меню за правую границу
+    if (x + menuWidth > screenWidth) {
+      finalX = x - menuWidth;
+    }
+    
+    // Проверяем, не выходит ли меню за нижнюю границу
+    if (y + menuHeight > screenHeight) {
+      finalY = y - menuHeight;
+    }
+    
+    // Устанавливаем позицию
+    menu.style.left = `${finalX}px`;
+    menu.style.top = `${finalY}px`;
   }
 
   /**
