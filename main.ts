@@ -309,6 +309,11 @@ class CardExplorerView extends ItemView {
       const subfolders = folder.children.filter(child => child.type === 'folder');
       if (subfolders.length > 0) {
         const subfoldersContainer = contentContainer.createDiv("subfolders-container");
+        
+        // Добавляем вертикальную линию-разделитель для подпапок
+        subfoldersContainer.style.borderLeft = "2px solid var(--background-modifier-border)";
+        subfoldersContainer.style.paddingLeft = "12px";
+        
         for (const subfolder of subfolders) {
           const subfolderElement = subfoldersContainer.createDiv("folder-container");
           subfolderElement.style.paddingLeft = `${(level + 1) * 12}px`;
@@ -321,21 +326,12 @@ class CardExplorerView extends ItemView {
       if (files.length > 0) {
         const filesContainer = contentContainer.createDiv("files-container");
         
-        // Заголовок папки над карточками (только для корневых папок)
-        if (level === 0) {
-          const folderHeader = filesContainer.createDiv("folder-files-header");
-          folderHeader.style.borderLeftColor = this.getFolderColor(folder.path);
-          folderHeader.createEl("h4", { text: `📁 ${folder.name}` });
-        }
-        
         // Карточки на всю ширину
         const cardsGrid = filesContainer.createDiv("card-grid-full-width");
         
-        // Добавляем вертикальную полосу для подпапок
-        if (level > 0) {
-          cardsGrid.style.borderLeft = `3px solid ${this.getFolderColor(folder.path)}`;
-          cardsGrid.style.paddingLeft = "8px";
-        }
+        // Добавляем вертикальную линию-разделитель для каждой раскрытой папки
+        cardsGrid.style.borderLeft = "2px solid var(--background-modifier-border)";
+        cardsGrid.style.paddingLeft = "12px";
         
         for (const file of files) {
           if (file.file) {
@@ -343,15 +339,8 @@ class CardExplorerView extends ItemView {
             const preview = content.split("\n").slice(0, 3).join(" ");
 
             const card = cardsGrid.createDiv("card");
-            
-            // Цветная полоска слева
-            const colorBar = card.createDiv("card-color-bar");
-            colorBar.style.backgroundColor = this.getFolderColor(folder.path);
-            
-            // Содержимое карточки
-            const cardContent = card.createDiv("card-content");
-            cardContent.createEl("h3", { text: file.name });
-            cardContent.createEl("p", { text: preview });
+            card.createEl("h3", { text: file.name });
+            card.createEl("p", { text: preview });
 
             // Обработчик клика для открытия файла
             card.onclick = () => {
