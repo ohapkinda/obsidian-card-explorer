@@ -355,9 +355,9 @@ class CardExplorerView extends ItemView {
             }
 
             // Обработчик клика для открытия файла
-            card.onclick = () => {
+            card.onclick = (e) => {
               if (file.file) {
-                this.openFileInSystem(file.file);
+                this.openFileInSystem(file.file, e);
               }
             };
 
@@ -778,22 +778,56 @@ class CardExplorerView extends ItemView {
   /**
    * Открывает файл в системном приложении по умолчанию
    * @param file - файл для открытия
+   * @param event - событие клика для определения модификаторов
    */
-  private openFileInSystem(file: TFile) {
+  private openFileInSystem(file: TFile, event?: MouseEvent) {
     // Для Obsidian файлов (.md) открываем в Obsidian
     if (file.extension === 'md') {
-      this.app.workspace.openLinkText(file.path, "", true);
+      // Проверяем, нажат ли Cmd (Mac) или Ctrl (Windows/Linux)
+      const openInNewTab = event && (event.metaKey || event.ctrlKey);
+      this.app.workspace.openLinkText(file.path, "", openInNewTab);
     } else {
-      // Для остальных файлов показываем путь и копируем в буфер обмена
-      const message = `Файл: ${file.path}\n\nСкопируйте этот путь и откройте в системном приложении.`;
-      alert(message);
+      // Для остальных файлов пытаемся открыть напрямую
+      this.openFileDirectly(file);
+    }
+  }
+
+  /**
+   * Открывает файл напрямую в системном приложении
+   * @param file - файл для открытия
+   */
+  private openFileDirectly(file: TFile) {
+    try {
+      // Создаем ссылку на файл
+      const fileUrl = `file://${file.path}`;
       
-      // Пытаемся скопировать путь в буфер обмена
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(file.path).catch(() => {
-          console.log("Не удалось скопировать путь в буфер обмена");
-        });
+      // Пытаемся открыть файл в новом окне/вкладке
+      const newWindow = window.open(fileUrl, '_blank');
+      
+      if (!newWindow) {
+        // Если не удалось открыть, показываем путь
+        this.showFilePath(file);
       }
+    } catch (error) {
+      console.error("Ошибка открытия файла:", error);
+      // В случае ошибки показываем путь
+      this.showFilePath(file);
+    }
+  }
+
+  /**
+   * Показывает путь к файлу и копирует в буфер обмена
+   * @param file - файл
+   */
+  private showFilePath(file: TFile) {
+    const message = `Файл: ${file.path}\n\nСкопируйте этот путь и откройте в системном приложении.`;
+    alert(message);
+    
+    // Пытаемся скопировать путь в буфер обмена
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(file.path).catch(() => {
+        console.log("Не удалось скопировать путь в буфер обмена");
+      });
     }
   }
 

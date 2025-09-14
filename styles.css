@@ -36,8 +36,8 @@
 /* Сетка карточек на всю ширину */
 .card-grid-full-width {
   display: grid; /* Используем CSS Grid для создания сетки */
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* Уменьшаем максимальную ширину в 2 раза (200px -> 100px) */
-  gap: 3px; /* Уменьшаем отступы между карточками в 2 раза (6px -> 3px) */
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); /* Устанавливаем ширину карточки 150px */
+  gap: 6px 3px; /* Вертикальное расстояние 6px, горизонтальное 3px (уменьшено в 2 раза) */
   padding: 10px; /* Внутренние отступы контейнера */
 }
 
