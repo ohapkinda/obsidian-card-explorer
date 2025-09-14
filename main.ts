@@ -278,6 +278,61 @@ class CardExplorerView extends ItemView {
         this.app.workspace.openLinkText(file.file.path, "", true);
       }
     };
+
+    // Обработчик правого клика для контекстного меню
+    fileHeader.oncontextmenu = (e) => {
+      e.preventDefault();
+      this.showFileContextMenu(e, file);
+    };
+  }
+
+  /**
+   * Показывает контекстное меню для файла
+   * @param event - событие мыши
+   * @param file - файл для которого показывается меню
+   */
+  private showFileContextMenu(event: MouseEvent, file: FileSystemItem) {
+    // Скрываем предыдущее меню если есть
+    this.hideContextMenu();
+
+    // Создаем контекстное меню
+    this.contextMenu = this.containerEl.createDiv("context-menu");
+    this.contextMenu.style.position = "fixed";
+    
+    // Получаем координаты относительно viewport
+    const x = event.clientX;
+    const y = event.clientY;
+    
+    // Устанавливаем позицию
+    this.contextMenu.style.left = `${x}px`;
+    this.contextMenu.style.top = `${y}px`;
+
+    // Получаем действия для файла
+    const actions = this.getFileActions(file);
+
+    // Создаем элементы меню
+    actions.forEach(action => {
+      const menuItem = this.contextMenu!.createDiv("context-menu-item");
+      if (action.dangerous) {
+        menuItem.addClass("dangerous");
+      }
+
+      const icon = menuItem.createSpan("context-menu-icon");
+      icon.textContent = action.icon;
+
+      const label = menuItem.createSpan("context-menu-label");
+      label.textContent = action.label;
+
+      menuItem.onclick = () => {
+        action.action();
+        this.hideContextMenu();
+      };
+    });
+
+    // Обработчик клика вне меню для его скрытия
+    setTimeout(() => {
+      document.addEventListener('click', this.hideContextMenu.bind(this), { once: true });
+    }, 0);
   }
 
   /**
@@ -291,9 +346,15 @@ class CardExplorerView extends ItemView {
 
     // Создаем контекстное меню
     this.contextMenu = this.containerEl.createDiv("context-menu");
-    this.contextMenu.style.position = "absolute";
-    this.contextMenu.style.left = `${event.clientX}px`;
-    this.contextMenu.style.top = `${event.clientY}px`;
+    this.contextMenu.style.position = "fixed";
+    
+    // Получаем координаты относительно viewport
+    const x = event.clientX;
+    const y = event.clientY;
+    
+    // Устанавливаем позицию
+    this.contextMenu.style.left = `${x}px`;
+    this.contextMenu.style.top = `${y}px`;
 
     // Получаем действия для папки
     const actions = this.getFolderActions(folder);
@@ -331,6 +392,42 @@ class CardExplorerView extends ItemView {
       this.contextMenu.remove();
       this.contextMenu = null;
     }
+  }
+
+  /**
+   * Получает действия для файла
+   * @param file - файл для которого получаем действия
+   * @returns массив действий
+   */
+  private getFileActions(file: FileSystemItem): ContextMenuAction[] {
+    return [
+      {
+        label: "Открыть файл",
+        icon: "📖",
+        action: () => this.openFile(file)
+      },
+      {
+        label: "Переименовать",
+        icon: "✏️",
+        action: () => this.renameFile(file)
+      },
+      {
+        label: "Дублировать",
+        icon: "📋",
+        action: () => this.duplicateFile(file)
+      },
+      {
+        label: "Переместить",
+        icon: "📁",
+        action: () => this.moveFile(file)
+      },
+      {
+        label: "Удалить файл",
+        icon: "🗑️",
+        action: () => this.deleteFile(file),
+        dangerous: true
+      }
+    ];
   }
 
   /**
@@ -456,6 +553,87 @@ class CardExplorerView extends ItemView {
       } catch (error) {
         console.error("Ошибка удаления папки:", error);
         alert("Не удалось удалить папку");
+      }
+    }
+  }
+
+  /**
+   * Открывает файл
+   * @param file - файл для открытия
+   */
+  private openFile(file: FileSystemItem) {
+    if (file.file) {
+      this.app.workspace.openLinkText(file.file.path, "", true);
+    }
+  }
+
+  /**
+   * Переименовывает файл
+   * @param file - файл для переименования
+   */
+  private async renameFile(file: FileSystemItem) {
+    const newName = prompt("Введите новое название файла:", file.name);
+    if (newName && newName !== file.name && newName.trim()) {
+      try {
+        const newPath = file.path.replace(file.name, newName.trim());
+        await this.app.vault.rename(file.file!, newPath);
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка переименования файла:", error);
+        alert("Не удалось переименовать файл");
+      }
+    }
+  }
+
+  /**
+   * Дублирует файл
+   * @param file - файл для дублирования
+   */
+  private async duplicateFile(file: FileSystemItem) {
+    if (file.file) {
+      try {
+        const content = await this.app.vault.cachedRead(file.file);
+        const newName = `${file.name} (копия)`;
+        const newPath = file.path.replace(file.name, newName);
+        await this.app.vault.create(newPath, content);
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка дублирования файла:", error);
+        alert("Не удалось дублировать файл");
+      }
+    }
+  }
+
+  /**
+   * Перемещает файл
+   * @param file - файл для перемещения
+   */
+  private async moveFile(file: FileSystemItem) {
+    const newPath = prompt("Введите новый путь для файла:", file.path);
+    if (newPath && newPath !== file.path && newPath.trim()) {
+      try {
+        await this.app.vault.rename(file.file!, newPath.trim());
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка перемещения файла:", error);
+        alert("Не удалось переместить файл");
+      }
+    }
+  }
+
+  /**
+   * Удаляет файл
+   * @param file - файл для удаления
+   */
+  private async deleteFile(file: FileSystemItem) {
+    const confirmed = confirm(`Вы уверены, что хотите удалить файл "${file.name}"?`);
+    if (confirmed) {
+      try {
+        await this.app.vault.delete(file.file!);
+        this.refreshView();
+      } catch (error) {
+        console.error("Ошибка удаления файла:", error);
+        alert("Не удалось удалить файл");
       }
     }
   }
