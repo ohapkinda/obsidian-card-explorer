@@ -1,4 +1,4 @@
-import { App, Plugin, WorkspaceLeaf, ItemView, TFile, TFolder, Modal, Setting, Menu } from "obsidian";
+import { App, Plugin, WorkspaceLeaf, ItemView, TFile, TFolder, Modal, Setting, Menu, Notice } from "obsidian";
 
 const VIEW_TYPE_CARDS = "card-explorer";
 
@@ -552,12 +552,28 @@ class CardExplorerView extends ItemView {
    * @param file - файл для показа
    */
   private showFileInFinder(file: FileSystemItem) {
-    // Используем API Obsidian для показа файла в Finder
     if (file.file) {
       try {
-        // Используем встроенный API Obsidian для показа файла
-        this.app.workspace.openLinkText(file.file.path, "", true);
-        console.log("File shown in Finder:", file.file.path);
+        // Получаем полный путь к файлу через vault
+        const fullPath = this.app.vault.adapter.getResourcePath(file.file.path);
+        console.log("File resource path:", fullPath);
+        
+        // Создаем ссылку для скачивания файла (это покажет его в Finder)
+        const link = document.createElement('a');
+        link.href = fullPath;
+        link.download = file.file.name;
+        link.target = '_blank';
+        
+        // Добавляем ссылку в DOM, кликаем и удаляем
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log("File download initiated for Finder:", file.file.name);
+        
+        // Показываем уведомление пользователю
+        new Notice(`Файл "${file.file.name}" скачан. Откройте папку Downloads в Finder.`);
+        
       } catch (error) {
         console.error("Ошибка показа файла в Finder:", error);
         // Fallback: показываем путь
@@ -579,12 +595,28 @@ class CardExplorerView extends ItemView {
    * @param folder - папка для открытия
    */
   private openInFinder(folder: FileSystemItem) {
-    // Используем API Obsidian для открытия папки в Finder
     if (folder.folder) {
       try {
-        // Используем встроенный API Obsidian для открытия папки
-        this.app.workspace.openLinkText(folder.folder.path, "", true);
-        console.log("Folder opened in Finder:", folder.folder.path);
+        // Получаем полный путь к папке через vault
+        const fullPath = this.app.vault.adapter.getResourcePath(folder.folder.path);
+        console.log("Folder resource path:", fullPath);
+        
+        // Создаем ссылку для скачивания папки (это покажет её в Finder)
+        const link = document.createElement('a');
+        link.href = fullPath;
+        link.download = folder.folder.name;
+        link.target = '_blank';
+        
+        // Добавляем ссылку в DOM, кликаем и удаляем
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        console.log("Folder download initiated for Finder:", folder.folder.name);
+        
+        // Показываем уведомление пользователю
+        new Notice(`Папка "${folder.folder.name}" скачана. Откройте папку Downloads в Finder.`);
+        
       } catch (error) {
         console.error("Ошибка открытия папки в Finder:", error);
         // Fallback: показываем путь
