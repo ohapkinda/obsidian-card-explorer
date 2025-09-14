@@ -461,6 +461,12 @@ class CardExplorerView extends ItemView {
         .onClick(() => this.moveFile(file));
     });
     
+    menu.addItem((item) => {
+      item.setTitle("Показать в Finder")
+        .setIcon("folder-open")
+        .onClick(() => this.showFileInFinder(file));
+    });
+    
     menu.addSeparator();
     
     menu.addItem((item) => {
@@ -542,20 +548,55 @@ class CardExplorerView extends ItemView {
   }
 
   /**
+   * Показывает файл в Finder/Explorer
+   * @param file - файл для показа
+   */
+  private showFileInFinder(file: FileSystemItem) {
+    // Используем API Obsidian для показа файла в Finder
+    if (file.file) {
+      try {
+        // Используем встроенный API Obsidian для показа файла
+        this.app.workspace.openLinkText(file.file.path, "", true);
+        console.log("File shown in Finder:", file.file.path);
+      } catch (error) {
+        console.error("Ошибка показа файла в Finder:", error);
+        // Fallback: показываем путь
+        const message = `Путь к файлу: ${file.file.path}\n\nСкопируйте этот путь и откройте в файловом менеджере.`;
+        alert(message);
+        
+        // Пытаемся скопировать путь в буфер обмена
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(file.file.path).catch(() => {
+            console.log("Не удалось скопировать путь в буфер обмена");
+          });
+        }
+      }
+    }
+  }
+
+  /**
    * Открывает папку в Finder/Explorer
    * @param folder - папка для открытия
    */
   private openInFinder(folder: FileSystemItem) {
-    // Показываем путь к папке пользователю
+    // Используем API Obsidian для открытия папки в Finder
     if (folder.folder) {
-      const message = `Путь к папке: ${folder.folder.path}\n\nСкопируйте этот путь и откройте в файловом менеджере.`;
-      alert(message);
-      
-      // Пытаемся скопировать путь в буфер обмена
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(folder.folder.path).catch(() => {
-          console.log("Не удалось скопировать путь в буфер обмена");
-        });
+      try {
+        // Используем встроенный API Obsidian для открытия папки
+        this.app.workspace.openLinkText(folder.folder.path, "", true);
+        console.log("Folder opened in Finder:", folder.folder.path);
+      } catch (error) {
+        console.error("Ошибка открытия папки в Finder:", error);
+        // Fallback: показываем путь
+        const message = `Путь к папке: ${folder.folder.path}\n\nСкопируйте этот путь и откройте в файловом менеджере.`;
+        alert(message);
+        
+        // Пытаемся скопировать путь в буфер обмена
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(folder.folder.path).catch(() => {
+            console.log("Не удалось скопировать путь в буфер обмена");
+          });
+        }
       }
     }
   }
