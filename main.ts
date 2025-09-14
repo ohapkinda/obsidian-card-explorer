@@ -1,4 +1,4 @@
-import { App, Plugin, WorkspaceLeaf, ItemView, TFile, TFolder, Modal, Setting } from "obsidian";
+import { App, Plugin, WorkspaceLeaf, ItemView, TFile, TFolder, Modal, Setting, Menu } from "obsidian";
 
 const VIEW_TYPE_CARDS = "card-explorer";
 
@@ -13,13 +13,6 @@ interface FileSystemItem {
   folder?: TFolder;
 }
 
-// Интерфейс для действий контекстного меню
-interface ContextMenuAction {
-  label: string;
-  icon: string;
-  action: () => void;
-  dangerous?: boolean;
-}
 
 // Модальное окно для переименования
 class RenameModal extends Modal {
@@ -144,7 +137,6 @@ export default class CardExplorerPlugin extends Plugin {
 
 class CardExplorerView extends ItemView {
   private fileSystemData: FileSystemItem[] = [];
-  private contextMenu: HTMLElement | null = null;
 
   /**
    * Конструктор представления Card Explorer
@@ -408,46 +400,43 @@ class CardExplorerView extends ItemView {
    */
   private showFileContextMenu(event: MouseEvent, file: FileSystemItem) {
     console.log("showFileContextMenu called for file:", file.name);
-    // Скрываем предыдущее меню если есть
-    this.hideContextMenu();
-
-    // Создаем контекстное меню
-    this.contextMenu = this.containerEl.createDiv("context-menu");
-    this.contextMenu.style.position = "fixed";
+    const menu = new Menu();
     
-    // Получаем координаты относительно viewport
-    const x = event.clientX;
-    const y = event.clientY;
-
-    // Получаем действия для файла
-    const actions = this.getFileActions(file);
-
-    // Создаем элементы меню
-    actions.forEach(action => {
-      const menuItem = this.contextMenu!.createDiv("context-menu-item");
-      if (action.dangerous) {
-        menuItem.addClass("dangerous");
-      }
-
-      const icon = menuItem.createSpan("context-menu-icon");
-      icon.textContent = action.icon;
-
-      const label = menuItem.createSpan("context-menu-label");
-      label.textContent = action.label;
-
-      menuItem.onclick = () => {
-        action.action();
-        this.hideContextMenu();
-      };
+    // Добавляем действия для файла
+    menu.addItem((item) => {
+      item.setTitle("Открыть файл")
+        .setIcon("file-text")
+        .onClick(() => this.openFile(file));
     });
-
-    // Позиционируем меню с учетом границ экрана
-    this.positionContextMenu(this.contextMenu, x, y);
-
-    // Обработчик клика вне меню для его скрытия
-    setTimeout(() => {
-      document.addEventListener('click', this.hideContextMenu.bind(this), { once: true });
-    }, 0);
+    
+    menu.addItem((item) => {
+      item.setTitle("Переименовать")
+        .setIcon("edit")
+        .onClick(() => this.renameFile(file));
+    });
+    
+    menu.addItem((item) => {
+      item.setTitle("Дублировать")
+        .setIcon("copy")
+        .onClick(() => this.duplicateFile(file));
+    });
+    
+    menu.addItem((item) => {
+      item.setTitle("Переместить")
+        .setIcon("folder")
+        .onClick(() => this.moveFile(file));
+    });
+    
+    menu.addSeparator();
+    
+    menu.addItem((item) => {
+      item.setTitle("Удалить файл")
+        .setIcon("trash")
+        .onClick(() => this.deleteFile(file));
+    });
+    
+    // Показываем меню в позиции курсора
+    menu.showAtPosition({ x: event.clientX, y: event.clientY });
   }
 
   /**
@@ -456,164 +445,48 @@ class CardExplorerView extends ItemView {
    * @param folder - папка для которой показывается меню
    */
   private showContextMenu(event: MouseEvent, folder: FileSystemItem) {
-    // Скрываем предыдущее меню если есть
-    this.hideContextMenu();
-
-    // Создаем контекстное меню
-    this.contextMenu = this.containerEl.createDiv("context-menu");
-    this.contextMenu.style.position = "fixed";
+    const menu = new Menu();
     
-    // Получаем координаты относительно viewport
-    const x = event.clientX;
-    const y = event.clientY;
-
-    // Получаем действия для папки
-    const actions = this.getFolderActions(folder);
-
-    // Создаем элементы меню
-    actions.forEach(action => {
-      const menuItem = this.contextMenu!.createDiv("context-menu-item");
-      if (action.dangerous) {
-        menuItem.addClass("dangerous");
-      }
-
-      const icon = menuItem.createSpan("context-menu-icon");
-      icon.textContent = action.icon;
-
-      const label = menuItem.createSpan("context-menu-label");
-      label.textContent = action.label;
-
-      menuItem.onclick = () => {
-        action.action();
-        this.hideContextMenu();
-      };
+    // Добавляем действия для папки
+    menu.addItem((item) => {
+      item.setTitle("Переименовать")
+        .setIcon("edit")
+        .onClick(() => this.renameFolder(folder));
     });
-
-    // Позиционируем меню с учетом границ экрана
-    this.positionContextMenu(this.contextMenu, x, y);
-
-    // Обработчик клика вне меню для его скрытия
-    setTimeout(() => {
-      document.addEventListener('click', this.hideContextMenu.bind(this), { once: true });
-    }, 0);
+    
+    menu.addItem((item) => {
+      item.setTitle("Открыть в Finder")
+        .setIcon("folder-open")
+        .onClick(() => this.openInFinder(folder));
+    });
+    
+    menu.addSeparator();
+    
+    menu.addItem((item) => {
+      item.setTitle("Создать папку")
+        .setIcon("folder-plus")
+        .onClick(() => this.createNewFolder(folder));
+    });
+    
+    menu.addItem((item) => {
+      item.setTitle("Создать файл")
+        .setIcon("file-plus")
+        .onClick(() => this.createNewFile(folder));
+    });
+    
+    menu.addSeparator();
+    
+    menu.addItem((item) => {
+      item.setTitle("Удалить папку")
+        .setIcon("trash")
+        .onClick(() => this.deleteFolder(folder));
+    });
+    
+    // Показываем меню в позиции курсора
+    menu.showAtPosition({ x: event.clientX, y: event.clientY });
   }
 
-  /**
-   * Скрывает контекстное меню
-   */
-  private hideContextMenu() {
-    if (this.contextMenu) {
-      this.contextMenu.remove();
-      this.contextMenu = null;
-    }
-  }
 
-  /**
-   * Позиционирует контекстное меню с учетом границ экрана
-   * @param menu - элемент контекстного меню
-   * @param x - координата X клика
-   * @param y - координата Y клика
-   */
-  private positionContextMenu(menu: HTMLElement, x: number, y: number) {
-    // Получаем размеры экрана
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
-    
-    // Получаем размеры меню (после его создания)
-    const menuRect = menu.getBoundingClientRect();
-    const menuWidth = menuRect.width || 180; // fallback к минимальной ширине
-    const menuHeight = menuRect.height || 200; // fallback к примерной высоте
-    
-    // Вычисляем финальные координаты
-    let finalX = x;
-    let finalY = y;
-    
-    // Проверяем, не выходит ли меню за правую границу
-    if (x + menuWidth > screenWidth) {
-      finalX = x - menuWidth;
-    }
-    
-    // Проверяем, не выходит ли меню за нижнюю границу
-    if (y + menuHeight > screenHeight) {
-      finalY = y - menuHeight;
-    }
-    
-    // Устанавливаем позицию
-    menu.style.left = `${finalX}px`;
-    menu.style.top = `${finalY}px`;
-  }
-
-  /**
-   * Получает действия для файла
-   * @param file - файл для которого получаем действия
-   * @returns массив действий
-   */
-  private getFileActions(file: FileSystemItem): ContextMenuAction[] {
-    return [
-      {
-        label: "Открыть файл",
-        icon: "📖",
-        action: () => this.openFile(file)
-      },
-      {
-        label: "Переименовать",
-        icon: "✏️",
-        action: () => this.renameFile(file)
-      },
-      {
-        label: "Дублировать",
-        icon: "📋",
-        action: () => this.duplicateFile(file)
-      },
-      {
-        label: "Переместить",
-        icon: "📁",
-        action: () => this.moveFile(file)
-      },
-      {
-        label: "Удалить файл",
-        icon: "🗑️",
-        action: () => this.deleteFile(file),
-        dangerous: true
-      }
-    ];
-  }
-
-  /**
-   * Получает действия для папки
-   * @param folder - папка для которой получаем действия
-   * @returns массив действий
-   */
-  private getFolderActions(folder: FileSystemItem): ContextMenuAction[] {
-    return [
-      {
-        label: "Переименовать",
-        icon: "✏️",
-        action: () => this.renameFolder(folder)
-      },
-      {
-        label: "Открыть в Finder",
-        icon: "📁",
-        action: () => this.openInFinder(folder)
-      },
-      {
-        label: "Создать папку",
-        icon: "📂",
-        action: () => this.createNewFolder(folder)
-      },
-      {
-        label: "Создать файл",
-        icon: "📄",
-        action: () => this.createNewFile(folder)
-      },
-      {
-        label: "Удалить папку",
-        icon: "🗑️",
-        action: () => this.deleteFolder(folder),
-        dangerous: true
-      }
-    ];
-  }
 
   /**
    * Переименовывает папку
