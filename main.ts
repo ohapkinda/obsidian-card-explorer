@@ -27,10 +27,10 @@ class RenameModal extends Modal {
 
   onOpen() {
     const { contentEl } = this;
-    contentEl.createEl("h2", { text: "Переименовать" });
+    contentEl.createEl("h2", { text: "Rename" });
 
     new Setting(contentEl)
-      .setName("Новое название")
+      .setName("New name")
       .addText(text => {
         text
           .setValue(this.newName)
@@ -41,11 +41,11 @@ class RenameModal extends Modal {
 
     new Setting(contentEl)
       .addButton(btn => btn
-        .setButtonText("Отмена")
+        .setButtonText("Cancel")
         .onClick(() => this.close())
       )
       .addButton(btn => btn
-        .setButtonText("Переименовать")
+        .setButtonText("Rename")
         .setCta()
         .onClick(() => {
           this.onSubmit(this.newName);
@@ -80,7 +80,7 @@ class CreateModal extends Modal {
     contentEl.createEl("h2", { text: this.title });
 
     new Setting(contentEl)
-      .setName("Название")
+      .setName("Name")
       .addText(text => text
         .setPlaceholder(this.placeholder)
         .onChange(value => this.name = value)
@@ -89,11 +89,11 @@ class CreateModal extends Modal {
 
     new Setting(contentEl)
       .addButton(btn => btn
-        .setButtonText("Отмена")
+        .setButtonText("Cancel")
         .onClick(() => this.close())
       )
       .addButton(btn => btn
-        .setButtonText("Создать")
+        .setButtonText("Create")
         .setCta()
         .onClick(() => {
           this.onSubmit(this.name);
@@ -348,10 +348,10 @@ class CardExplorerView extends ItemView {
                 const preview = content.split("\n").slice(0, 3).join(" ");
                 card.createEl("p", { text: preview });
               } catch (error) {
-                card.createEl("p", { text: "Не удалось прочитать файл" });
+                card.createEl("p", { text: "Failed to read file" });
               }
             } else {
-              card.createEl("p", { text: `${file.file.extension.toUpperCase()} файл` });
+              card.createEl("p", { text: `${file.file.extension.toUpperCase()} file` });
             }
 
             // Обработчик клика для открытия файла
@@ -436,33 +436,33 @@ class CardExplorerView extends ItemView {
     console.log("showFileContextMenu called for file:", file.name);
     const menu = new Menu();
     
-    // Добавляем действия для файла
+    // Add actions for file
     menu.addItem((item) => {
-      item.setTitle("Открыть файл")
+      item.setTitle("Open file")
         .setIcon("file-text")
         .onClick(() => this.openFile(file));
     });
     
     menu.addItem((item) => {
-      item.setTitle("Переименовать")
+      item.setTitle("Rename")
         .setIcon("edit")
         .onClick(() => this.renameFile(file));
     });
     
     menu.addItem((item) => {
-      item.setTitle("Дублировать")
+      item.setTitle("Duplicate")
         .setIcon("copy")
         .onClick(() => this.duplicateFile(file));
     });
     
     menu.addItem((item) => {
-      item.setTitle("Переместить")
+      item.setTitle("Move")
         .setIcon("folder")
         .onClick(() => this.moveFile(file));
     });
     
     menu.addItem((item) => {
-      item.setTitle("Показать в Finder")
+      item.setTitle("Show in Finder")
         .setIcon("folder-open")
         .onClick(() => this.showFileInFinder(file));
     });
@@ -470,7 +470,7 @@ class CardExplorerView extends ItemView {
     menu.addSeparator();
     
     menu.addItem((item) => {
-      item.setTitle("Удалить файл")
+      item.setTitle("Delete file")
         .setIcon("trash")
         .onClick(() => this.deleteFile(file));
     });
@@ -487,15 +487,15 @@ class CardExplorerView extends ItemView {
   private showContextMenu(event: MouseEvent, folder: FileSystemItem) {
     const menu = new Menu();
     
-    // Добавляем действия для папки
+    // Add actions for folder
     menu.addItem((item) => {
-      item.setTitle("Переименовать")
+      item.setTitle("Rename")
         .setIcon("edit")
         .onClick(() => this.renameFolder(folder));
     });
     
     menu.addItem((item) => {
-      item.setTitle("Открыть в Finder")
+      item.setTitle("Open in Finder")
         .setIcon("folder-open")
         .onClick(() => this.openInFinder(folder));
     });
@@ -503,13 +503,13 @@ class CardExplorerView extends ItemView {
     menu.addSeparator();
     
     menu.addItem((item) => {
-      item.setTitle("Создать папку")
+      item.setTitle("Create folder")
         .setIcon("folder-plus")
         .onClick(() => this.createNewFolder(folder));
     });
     
     menu.addItem((item) => {
-      item.setTitle("Создать файл")
+      item.setTitle("Create file")
         .setIcon("file-plus")
         .onClick(() => this.createNewFile(folder));
     });
@@ -517,7 +517,7 @@ class CardExplorerView extends ItemView {
     menu.addSeparator();
     
     menu.addItem((item) => {
-      item.setTitle("Удалить папку")
+      item.setTitle("Delete folder")
         .setIcon("trash")
         .onClick(() => this.deleteFolder(folder));
     });
@@ -541,7 +541,7 @@ class CardExplorerView extends ItemView {
           this.refreshView();
         } catch (error) {
           console.error("Ошибка переименования папки:", error);
-          alert("Не удалось переименовать папку");
+          alert("Failed to rename folder");
         }
       }
     }).open();
@@ -571,13 +571,13 @@ class CardExplorerView extends ItemView {
         
         console.log("File download initiated for Finder:", file.file.name);
         
-        // Показываем уведомление пользователю
-        new Notice(`Файл "${file.file.name}" скачан. Откройте папку Downloads в Finder.`);
+        // Show notification to user
+        new Notice(`File "${file.file.name}" downloaded. Open Downloads folder in Finder.`);
         
       } catch (error) {
         console.error("Ошибка показа файла в Finder:", error);
-        // Fallback: показываем путь
-        const message = `Путь к файлу: ${file.file.path}\n\nСкопируйте этот путь и откройте в файловом менеджере.`;
+        // Fallback: show path
+        const message = `File path: ${file.file.path}\n\nCopy this path and open in file manager.`;
         alert(message);
         
         // Пытаемся скопировать путь в буфер обмена
@@ -614,13 +614,13 @@ class CardExplorerView extends ItemView {
         
         console.log("Folder download initiated for Finder:", folder.folder.name);
         
-        // Показываем уведомление пользователю
-        new Notice(`Папка "${folder.folder.name}" скачана. Откройте папку Downloads в Finder.`);
+        // Show notification to user
+        new Notice(`Folder "${folder.folder.name}" downloaded. Open Downloads folder in Finder.`);
         
       } catch (error) {
         console.error("Ошибка открытия папки в Finder:", error);
-        // Fallback: показываем путь
-        const message = `Путь к папке: ${folder.folder.path}\n\nСкопируйте этот путь и откройте в файловом менеджере.`;
+        // Fallback: show path
+        const message = `Folder path: ${folder.folder.path}\n\nCopy this path and open in file manager.`;
         alert(message);
         
         // Пытаемся скопировать путь в буфер обмена
@@ -638,7 +638,7 @@ class CardExplorerView extends ItemView {
    * @param parentFolder - родительская папка
    */
   private async createNewFolder(parentFolder: FileSystemItem) {
-    new CreateModal(this.app, "Создать папку", "Название папки", async (folderName) => {
+    new CreateModal(this.app, "Create folder", "Folder name", async (folderName) => {
       if (folderName && folderName.trim()) {
         try {
           const newPath = `${parentFolder.path}/${folderName.trim()}`;
@@ -646,7 +646,7 @@ class CardExplorerView extends ItemView {
           this.refreshView();
         } catch (error) {
           console.error("Ошибка создания папки:", error);
-          alert("Не удалось создать папку");
+          alert("Failed to create folder");
         }
       }
     }).open();
@@ -657,7 +657,7 @@ class CardExplorerView extends ItemView {
    * @param parentFolder - родительская папка
    */
   private async createNewFile(parentFolder: FileSystemItem) {
-    new CreateModal(this.app, "Создать файл", "Название файла (с .md)", async (fileName) => {
+    new CreateModal(this.app, "Create file", "File name (with .md)", async (fileName) => {
       if (fileName && fileName.trim()) {
         try {
           const fileNameWithExt = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
@@ -666,7 +666,7 @@ class CardExplorerView extends ItemView {
           this.refreshView();
         } catch (error) {
           console.error("Ошибка создания файла:", error);
-          alert("Не удалось создать файл");
+          alert("Failed to create file");
         }
       }
     }).open();
@@ -677,14 +677,14 @@ class CardExplorerView extends ItemView {
    * @param folder - папка для удаления
    */
   private async deleteFolder(folder: FileSystemItem) {
-    const confirmed = confirm(`Вы уверены, что хотите удалить папку "${folder.name}" и все её содержимое?`);
+    const confirmed = confirm(`Are you sure you want to delete folder "${folder.name}" and all its contents?`);
     if (confirmed) {
       try {
         await this.app.vault.delete(folder.folder!);
         this.refreshView();
       } catch (error) {
         console.error("Ошибка удаления папки:", error);
-        alert("Не удалось удалить папку");
+        alert("Failed to delete folder");
       }
     }
   }
@@ -712,7 +712,7 @@ class CardExplorerView extends ItemView {
           this.refreshView();
         } catch (error) {
           console.error("Ошибка переименования файла:", error);
-          alert("Не удалось переименовать файл");
+          alert("Failed to rename file");
         }
       }
     }).open();
@@ -726,13 +726,13 @@ class CardExplorerView extends ItemView {
     if (file.file) {
       try {
         const content = await this.app.vault.cachedRead(file.file);
-        const newName = `${file.name} (копия)`;
+        const newName = `${file.name} (copy)`;
         const newPath = file.path.replace(file.name, newName);
         await this.app.vault.create(newPath, content);
         this.refreshView();
       } catch (error) {
         console.error("Ошибка дублирования файла:", error);
-        alert("Не удалось дублировать файл");
+        alert("Failed to duplicate file");
       }
     }
   }
@@ -742,14 +742,14 @@ class CardExplorerView extends ItemView {
    * @param file - файл для перемещения
    */
   private async moveFile(file: FileSystemItem) {
-    new CreateModal(this.app, "Переместить файл", "Новый путь", async (newPath) => {
+    new CreateModal(this.app, "Move file", "New path", async (newPath) => {
       if (newPath && newPath !== file.path && newPath.trim()) {
         try {
           await this.app.vault.rename(file.file!, newPath.trim());
           this.refreshView();
         } catch (error) {
           console.error("Ошибка перемещения файла:", error);
-          alert("Не удалось переместить файл");
+          alert("Failed to move file");
         }
       }
     }).open();
@@ -760,14 +760,14 @@ class CardExplorerView extends ItemView {
    * @param file - файл для удаления
    */
   private async deleteFile(file: FileSystemItem) {
-    const confirmed = confirm(`Вы уверены, что хотите удалить файл "${file.name}"?`);
+    const confirmed = confirm(`Are you sure you want to delete file "${file.name}"?`);
     if (confirmed) {
       try {
         await this.app.vault.delete(file.file!);
         this.refreshView();
       } catch (error) {
         console.error("Ошибка удаления файла:", error);
-        alert("Не удалось удалить файл");
+        alert("Failed to delete file");
       }
     }
   }
@@ -894,7 +894,7 @@ class CardExplorerView extends ItemView {
    * @param file - файл
    */
   private showFilePath(file: TFile) {
-    const message = `Файл: ${file.path}\n\nСкопируйте этот путь и откройте в системном приложении.`;
+    const message = `File: ${file.path}\n\nCopy this path and open in system application.`;
     alert(message);
     
     // Пытаемся скопировать путь в буфер обмена
