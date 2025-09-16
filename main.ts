@@ -461,12 +461,6 @@ class CardExplorerView extends ItemView {
         .onClick(() => this.moveFile(file));
     });
     
-    menu.addItem((item) => {
-      item.setTitle("Show in Finder")
-        .setIcon("folder-open")
-        .onClick(() => this.showFileInFinder(file));
-    });
-    
     menu.addSeparator();
     
     menu.addItem((item) => {
@@ -492,12 +486,6 @@ class CardExplorerView extends ItemView {
       item.setTitle("Rename")
         .setIcon("edit")
         .onClick(() => this.renameFolder(folder));
-    });
-    
-    menu.addItem((item) => {
-      item.setTitle("Open in Finder")
-        .setIcon("folder-open")
-        .onClick(() => this.openInFinder(folder));
     });
     
     menu.addSeparator();
@@ -547,91 +535,6 @@ class CardExplorerView extends ItemView {
     }).open();
   }
 
-  /**
-   * Показывает файл в Finder/Explorer
-   * @param file - файл для показа
-   */
-  private showFileInFinder(file: FileSystemItem) {
-    if (file.file) {
-      try {
-        // Получаем полный путь к файлу через vault
-        const fullPath = this.app.vault.adapter.getResourcePath(file.file.path);
-        console.log("File resource path:", fullPath);
-        
-        // Создаем ссылку для скачивания файла (это покажет его в Finder)
-        const link = document.createElement('a');
-        link.href = fullPath;
-        link.download = file.file.name;
-        link.target = '_blank';
-        
-        // Добавляем ссылку в DOM, кликаем и удаляем
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log("File download initiated for Finder:", file.file.name);
-        
-        // Show notification to user
-        new Notice(`File "${file.file.name}" downloaded. Open Downloads folder in Finder.`);
-        
-      } catch (error) {
-        console.error("Ошибка показа файла в Finder:", error);
-        // Fallback: show path
-        const message = `File path: ${file.file.path}\n\nCopy this path and open in file manager.`;
-        alert(message);
-        
-        // Пытаемся скопировать путь в буфер обмена
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(file.file.path).catch(() => {
-            console.log("Не удалось скопировать путь в буфер обмена");
-          });
-        }
-      }
-    }
-  }
-
-  /**
-   * Открывает папку в Finder/Explorer
-   * @param folder - папка для открытия
-   */
-  private openInFinder(folder: FileSystemItem) {
-    if (folder.folder) {
-      try {
-        // Получаем полный путь к папке через vault
-        const fullPath = this.app.vault.adapter.getResourcePath(folder.folder.path);
-        console.log("Folder resource path:", fullPath);
-        
-        // Создаем ссылку для скачивания папки (это покажет её в Finder)
-        const link = document.createElement('a');
-        link.href = fullPath;
-        link.download = folder.folder.name;
-        link.target = '_blank';
-        
-        // Добавляем ссылку в DOM, кликаем и удаляем
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        console.log("Folder download initiated for Finder:", folder.folder.name);
-        
-        // Show notification to user
-        new Notice(`Folder "${folder.folder.name}" downloaded. Open Downloads folder in Finder.`);
-        
-      } catch (error) {
-        console.error("Ошибка открытия папки в Finder:", error);
-        // Fallback: show path
-        const message = `Folder path: ${folder.folder.path}\n\nCopy this path and open in file manager.`;
-        alert(message);
-        
-        // Пытаемся скопировать путь в буфер обмена
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(folder.folder.path).catch(() => {
-            console.log("Не удалось скопировать путь в буфер обмена");
-          });
-        }
-      }
-    }
-  }
 
   /**
    * Создает новую папку
