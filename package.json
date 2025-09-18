@@ -1,12 +1,12 @@
 {
-  "name": "obsidian-card-explorer",
+  "name": "obsidian-cards-explorer",
   "version": "1.0.0",
-  "description": "",
+  "description": "Unified file explorer with card previews and tree structure for Obsidian",
   "main": "index.js",
   "scripts": {
 	"build": "rollup -c && npm run install-demo",
-	"install-demo": "cp main.js manifest.json styles.css demo-vault/.obsidian/plugins/obsidian-card-explorer/",
-	"install-local": "cp main.js manifest.json styles.css /Users/ohapkin/Desktop/M3/MainStorage/.obsidian/plugins/obsidian-card-explorer/"
+	"install-demo": "cp main.js manifest.json styles.css demo-vault/.obsidian/plugins/obsidian-cards-explorer/",
+	"install-local": "cp main.js manifest.json styles.css /Users/ohapkin/Desktop/M3/MainStorage/.obsidian/plugins/obsidian-cards-explorer/"
   },
   "keywords": [],
   "author": "",
