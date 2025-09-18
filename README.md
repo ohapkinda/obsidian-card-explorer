@@ -14,6 +14,21 @@ A unified file explorer plugin for Obsidian with card previews and tree structur
 
 ## Installation
 
+### Try the Demo First!
+
+Before installing, you can try the plugin with our demo vault:
+
+1. Clone this repository: `git clone https://github.com/ohapkinda/obsidian-card-explorer.git`
+2. Open the `demo-vault` folder in Obsidian
+3. Enable the Card Explorer plugin in Community Plugins settings
+4. Click the "layout-grid" icon to see the plugin in action!
+
+The demo vault includes:
+- Sample notes and projects
+- Organized folder structure
+- Rich content for previews
+- Pre-configured Obsidian settings
+
 ### Manual Installation
 
 1. Download the latest release from the [releases page](https://github.com/ohapkinda/obsidian-card-explorer/releases)
@@ -25,10 +40,8 @@ A unified file explorer plugin for Obsidian with card previews and tree structur
 1. Clone this repository
 2. Install dependencies: `npm install`
 3. Build the plugin: `npm run build`
-4. Copy the built files to your Obsidian plugins folder:
-   ```bash
-   cp main.js manifest.json styles.css /path/to/your/vault/.obsidian/plugins/obsidian-card-explorer/
-   ```
+4. The plugin will be automatically installed to the demo vault
+5. For local installation: `npm run install-local`
 
 ## Usage
 

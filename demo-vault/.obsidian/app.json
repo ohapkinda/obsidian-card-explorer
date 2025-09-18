@@ -1,0 +1,19 @@
+{
+  "legacyEditor": false,
+  "livePreview": true,
+  "defaultViewMode": "preview",
+  "attachmentFolderPath": "Resources/Images",
+  "newLinkFormat": "shortest",
+  "useMarkdownLinks": true,
+  "foldHeading": true,
+  "foldIndent": true,
+  "showLineNumber": true,
+  "spellcheck": true,
+  "spellcheckLanguages": [
+    "en"
+  ],
+  "strictLineBreaks": false,
+  "tabSize": 2,
+  "useTab": false,
+  "vim": false
+}
