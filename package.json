@@ -5,8 +5,8 @@
   "main": "index.js",
   "scripts": {
 	"build": "rollup -c && npm run install-demo",
-	"install-demo": "cp main.js manifest.json styles.css demo-vault/.obsidian/plugins/obsidian-cards-explorer/",
-	"install-local": "cp main.js manifest.json styles.css /Users/ohapkin/Desktop/M3/MainStorage/.obsidian/plugins/obsidian-cards-explorer/"
+	"install-demo": "cp main.js manifest.json styles.css demo-vault/.obsidian/plugins/cards-explorer/",
+	"install-local": "cp main.js manifest.json styles.css /Users/ohapkin/Desktop/M3/MainStorage/.obsidian/plugins/cards-explorer/"
   },
   "keywords": [],
   "author": "",
