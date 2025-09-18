@@ -1,6 +1,6 @@
 {
   "id": "card-explorer",
-  "name": "Card Explorer",
+  "name": "Cards Explorer",
   "version": "0.0.1",
   "minAppVersion": "1.4.0",
   "description": "Unified file explorer with card previews and tree structure",

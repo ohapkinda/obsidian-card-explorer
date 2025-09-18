@@ -119,7 +119,7 @@ export default class CardExplorerPlugin extends Plugin {
       (leaf) => new CardExplorerView(leaf)
     );
 
-    this.addRibbonIcon("layout-grid", "Open Card Explorer", () => {
+    this.addRibbonIcon("layout-grid", "Open Cards Explorer", () => {
       this.activateView();
     });
   }
@@ -161,7 +161,7 @@ class CardExplorerView extends ItemView {
    * @returns Название для отображения в интерфейсе
    */
   getDisplayText() {
-    return "Card Explorer";
+    return "Cards Explorer";
   }
 
   /**

@@ -1,8 +1,8 @@
-# 📂 Card Explorer
+# 📂 Cards Explorer
 
-![Card Explorer Interface](assets/Obsidian%20screenshot.png)
+![Cards Explorer Interface](assets/Obsidian%20screenshot.png)
 
-**Card Explorer** is a plugin for [Obsidian.md](https://obsidian.md) that combines folders and notes into a unified tree structure and displays files as cards with previews.
+**Cards Explorer** is a plugin for [Obsidian.md](https://obsidian.md) that combines folders and notes into a unified tree structure and displays files as cards with previews.
 
 ---
 
@@ -24,9 +24,9 @@ The plugin is available in the *Obsidian Community Marketplace*.
 1. Open Obsidian settings
 2. Go to **Community plugins** tab
 3. Click **Browse**
-4. Search for *Card Explorer*
+4. Search for *Cards Explorer*
 5. Install and enable the plugin
-6. A new icon will appear in the toolbar to open Card Explorer, also available as a command in the command palette
+6. A new icon will appear in the toolbar to open Cards Explorer, also available as a command in the command palette
 
 ### Try the Demo First!
 
@@ -34,7 +34,7 @@ Before installing, you can try the plugin with our demo vault:
 
 1. Clone this repository: `git clone https://github.com/ohapkinda/obsidian-card-explorer.git`
 2. Open the `demo-vault` folder in Obsidian
-3. Enable the Card Explorer plugin in Community Plugins settings
+3. Enable the Cards Explorer plugin in Community Plugins settings
 4. Click the "layout-grid" icon to see the plugin in action!
 
 The demo vault includes:
@@ -47,7 +47,7 @@ The demo vault includes:
 
 ## 🚀 Usage
 
-1. Click the "layout-grid" icon in the toolbar to open Card Explorer
+1. Click the "layout-grid" icon in the toolbar to open Cards Explorer
 2. The plugin opens in the right panel showing your vault's file structure
 3. Click on folders to expand/collapse them
 4. Click on file cards to open them in Obsidian
@@ -77,10 +77,10 @@ The demo vault includes:
 ## 🤝 Contributing
 
 I welcome suggestions, bug reports, and PRs!  
-Create an issue here: [Card Explorer Issues](https://github.com/ohapkinda/obsidian-card-explorer/issues)
+Create an issue here: [Cards Explorer Issues](https://github.com/ohapkinda/obsidian-card-explorer/issues)
 
 ---
 
 ## 📜 License
 
-[MIT](https://choosealicense.com/licenses/mit/) © 2025
+[MIT](https://choosealicense.com/licenses/mit/) © 2025 ohapkinda
