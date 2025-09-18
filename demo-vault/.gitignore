@@ -1,0 +1,15 @@
+# Obsidian workspace and user-specific files
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/hotkeys.json
+.obsidian/appearance.json
+.obsidian/graph.json
+.obsidian/canvas.json
+
+# User-specific settings that shouldn't be shared
+.obsidian/core-plugins.json
+.obsidian/community-plugins.json
+
+# Keep only essential config files
+!.obsidian/app.json
+!.obsidian/plugins/
