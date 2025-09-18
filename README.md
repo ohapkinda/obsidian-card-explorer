@@ -32,7 +32,7 @@ The plugin is available in the *Obsidian Community Marketplace*.
 
 Before installing, you can try the plugin with our demo vault:
 
-1. Clone this repository: `git clone https://github.com/ohapkinda/obsidian-card-explorer.git`
+1. Clone this repository: `git clone https://github.com/ohapkinda/obsidian-cards-explorer.git`
 2. Open the `demo-vault` folder in Obsidian
 3. Enable the Cards Explorer plugin in Community Plugins settings
 4. Click the "layout-grid" icon to see the plugin in action!
@@ -77,7 +77,7 @@ The demo vault includes:
 ## 🤝 Contributing
 
 I welcome suggestions, bug reports, and PRs!  
-Create an issue here: [Cards Explorer Issues](https://github.com/ohapkinda/obsidian-card-explorer/issues)
+Create an issue here: [Cards Explorer Issues](https://github.com/ohapkinda/obsidian-cards-explorer/issues)
 
 ---
 
