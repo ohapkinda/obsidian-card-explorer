@@ -5,6 +5,5 @@
   "minAppVersion": "1.4.0",
   "description": "Unified file explorer with card previews and tree structure",
   "author": "ohapkinda",
-  "isDesktopOnly": false,
-  "main": "main"
+  "isDesktopOnly": false
 }
