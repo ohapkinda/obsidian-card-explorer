@@ -10,6 +10,30 @@
   margin-bottom: 8px; /* Отступ между папками */
 }
 
+/* Отступы для разных уровней вложенности */
+.folder-container[data-level="0"] { padding-left: 0px; }
+.folder-container[data-level="1"] { padding-left: 20px; }
+.folder-container[data-level="2"] { padding-left: 40px; }
+.folder-container[data-level="3"] { padding-left: 60px; }
+.folder-container[data-level="4"] { padding-left: 80px; }
+.folder-container[data-level="5"] { padding-left: 100px; }
+.folder-container[data-level="6"] { padding-left: 120px; }
+.folder-container[data-level="7"] { padding-left: 140px; }
+.folder-container[data-level="8"] { padding-left: 160px; }
+.folder-container[data-level="9"] { padding-left: 180px; }
+
+/* Для подпапок с границей */
+.subfolders-with-border {
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: 12px;
+}
+
+/* Для карточек файлов с границей */
+.cards-with-border {
+  border-left: 2px solid var(--background-modifier-border);
+  padding-left: 12px;
+}
+
 /* Содержимое папки */
 .folder-content {
   margin-top: 8px; /* Отступ от заголовка папки */

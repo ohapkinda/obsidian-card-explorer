@@ -256,7 +256,7 @@ class CardExplorerView extends ItemView {
       if (item.type === 'folder') {
         // Рендерим папку
         const folderElement = container.createDiv("folder-container");
-        folderElement.style.paddingLeft = `${level * 20}px`;
+        folderElement.setAttribute('data-level', level.toString());
         await this.renderFolderWithContent(folderElement, item, level);
       }
     }
@@ -297,7 +297,6 @@ class CardExplorerView extends ItemView {
     // Обработчик правого клика для контекстного меню
     folderHeader.oncontextmenu = (e) => {
       e.preventDefault();
-      console.log("Right click on folder:", folder.name);
       this.showContextMenu(e, folder);
     };
 
@@ -310,13 +309,12 @@ class CardExplorerView extends ItemView {
       if (subfolders.length > 0) {
         const subfoldersContainer = contentContainer.createDiv("subfolders-container");
         
-        // Добавляем вертикальную линию-разделитель для подпапок
-        subfoldersContainer.style.borderLeft = "2px solid var(--background-modifier-border)";
-        subfoldersContainer.style.paddingLeft = "12px";
+        // Добавляем класс для стилизации подпапок
+        subfoldersContainer.addClass("subfolders-with-border");
         
         for (const subfolder of subfolders) {
           const subfolderElement = subfoldersContainer.createDiv("folder-container");
-          subfolderElement.style.paddingLeft = `${(level + 1) * 12}px`;
+          subfolderElement.setAttribute('data-level', (level + 1).toString());
           await this.renderFolderWithContent(subfolderElement, subfolder, level + 1);
         }
       }
@@ -329,9 +327,8 @@ class CardExplorerView extends ItemView {
         // Карточки на всю ширину
         const cardsGrid = filesContainer.createDiv("card-grid-full-width");
         
-        // Добавляем вертикальную линию-разделитель для каждой раскрытой папки
-        cardsGrid.style.borderLeft = "2px solid var(--background-modifier-border)";
-        cardsGrid.style.paddingLeft = "12px";
+        // Добавляем класс для стилизации карточек файлов
+        cardsGrid.addClass("cards-with-border");
         
         for (const file of files) {
           if (file.file) {
@@ -356,7 +353,6 @@ class CardExplorerView extends ItemView {
 
             // Обработчик клика для открытия файла
             card.onclick = (e) => {
-              console.log("File card clicked:", file.name, file.file);
               if (file.file) {
                 this.openFileInSystem(file.file, e);
               }
@@ -365,7 +361,6 @@ class CardExplorerView extends ItemView {
             // Обработчик правого клика для контекстного меню
             card.oncontextmenu = (e) => {
               e.preventDefault();
-              console.log("Right click on file card:", file.name);
               this.showFileContextMenu(e, file);
             };
           }
@@ -415,14 +410,12 @@ class CardExplorerView extends ItemView {
     // Обработчик правого клика для контекстного меню
     fileHeader.oncontextmenu = (e) => {
       e.preventDefault();
-      console.log("Right click on file header:", file.name);
       this.showFileContextMenu(e, file);
     };
 
     // Также добавляем обработчик к самой карточке файла
     element.oncontextmenu = (e) => {
       e.preventDefault();
-      console.log("Right click on file card:", file.name);
       this.showFileContextMenu(e, file);
     };
   }
@@ -433,7 +426,6 @@ class CardExplorerView extends ItemView {
    * @param file - файл для которого показывается меню
    */
   private showFileContextMenu(event: MouseEvent, file: FileSystemItem) {
-    console.log("showFileContextMenu called for file:", file.name);
     const menu = new Menu();
     
     // Add actions for file
@@ -583,7 +575,7 @@ class CardExplorerView extends ItemView {
     const confirmed = confirm(`Are you sure you want to delete folder "${folder.name}" and all its contents?`);
     if (confirmed) {
       try {
-        await this.app.vault.delete(folder.folder!);
+        await this.app.fileManager.trashFile(folder.folder!);
         this.refreshView();
       } catch (error) {
         console.error("Ошибка удаления папки:", error);
@@ -666,7 +658,7 @@ class CardExplorerView extends ItemView {
     const confirmed = confirm(`Are you sure you want to delete file "${file.name}"?`);
     if (confirmed) {
       try {
-        await this.app.vault.delete(file.file!);
+        await this.app.fileManager.trashFile(file.file!);
         this.refreshView();
       } catch (error) {
         console.error("Ошибка удаления файла:", error);
@@ -758,16 +750,13 @@ class CardExplorerView extends ItemView {
    * @param event - событие клика для определения модификаторов
    */
   private openFileInSystem(file: TFile, event?: MouseEvent) {
-    console.log("openFileInSystem called:", file.name, file.extension);
     // Для Obsidian файлов (.md) открываем в Obsidian
     if (file.extension === 'md') {
       // Проверяем, нажат ли Cmd (Mac) или Ctrl (Windows/Linux)
       const openInNewTab = event && (event.metaKey || event.ctrlKey);
-      console.log("Opening MD file:", file.path, "in new tab:", openInNewTab);
       this.app.workspace.openLinkText(file.path, "", openInNewTab);
     } else {
       // Для остальных файлов пытаемся открыть напрямую
-      console.log("Opening non-MD file:", file.name);
       this.openFileDirectly(file);
     }
   }
@@ -778,12 +767,9 @@ class CardExplorerView extends ItemView {
    */
   private openFileDirectly(file: TFile) {
     try {
-      console.log("openFileDirectly called for:", file.name);
-      
       // Используем встроенный API Obsidian для открытия файла
       // Это тот же механизм, что использует обычный файловый менеджер
       this.app.workspace.openLinkText(file.path, "", true);
-      console.log("File opened using Obsidian API");
       
     } catch (error) {
       console.error("Ошибка открытия файла:", error);
@@ -803,7 +789,7 @@ class CardExplorerView extends ItemView {
     // Пытаемся скопировать путь в буфер обмена
     if (navigator.clipboard) {
       navigator.clipboard.writeText(file.path).catch(() => {
-        console.log("Не удалось скопировать путь в буфер обмена");
+        // Тихо игнорируем ошибку копирования
       });
     }
   }
